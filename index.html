@@ -1,0 +1,51 @@
+<!DOCTYPE html> <!-- recognizes file type as HTML-->
+
+<html lang="en"> <!--sets language to english and opens document-->
+<head>
+    <meta charset="UTF-8" /> <!--tells web bnowser to interpret doc using UTF-8 encoding-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
+    <title>MSA RSVP Form</title> <!--Title shown in browser-->
+    <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4"> <!--full screen layout with gray background and centered content-->
+
+    <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md"> <!--white card container wiht shadow and padding-->
+        <h1 class="text-2xl font-bold mb-4 text-center">MSA Event RSVP <!--main heading-->
+        </h1>
+        
+        <form id="rsvpForm" class="space-y-4"> <!--RSVP form with vertical spacing between fields-->
+            <input type="text" name="name" placeholder="Full Name" required class="w-full border p-2 rounded" /> <!--Input for name-->
+
+            <input type="email" name="email" placeholder="Email Address" required class="w-full border p-2 rounded" /> <!--Input for email-->
+
+            <input type="text" name="hofstraId" placeholder="Hofstra ID (if student)" class="w-full border p-2 rounded" /> <!--Optional Input for hofstra ID-->
+
+            <select name="status" required class="w-full border p-2 rounded"> <!--Dropdown menu to select student or guest-->
+                <option value="">Are you a Hofstra student?</option>
+                <option value="student">Yes</option>
+                <option value="guest">No</option>
+            </select>
+
+            <input type="text" name="dietary" placeholder="Dietary Restrictions (optional)" class="w-full border p-2 rounded" /> <!-- Optional dietary restrictions -->
+
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Submit RSVP   <!--Submit button-->
+            </button>
+        </form>
+
+        <p id="message" class="mt-4 text-center text-green-600 hidden">Submitted successfully!
+        </p>
+
+    </div>
+
+    <script src="script.js"></script> <!-- Link to JavaScript file -->
+
+</body>
+</html>
+
+<!--Notes:
+- Fix Boxes
+- Add Background
+- Colors
+- Transition to new screen for successful submission
+-->

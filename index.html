@@ -140,15 +140,15 @@
 
         console.log("Form submitted:", data); // log data to console
 
-        document.getElementById("message").classList.remove("hidden"); // unhide success message
+        //document.getElementById("message").classList.remove("hidden"); // unhide success message
 
         form.reset(); // clear form
 
         document.getElementById("guestField").classList.add("hidden"); // hide guest fields after reset
 
-        //setTimeout(() => { // wait 1 second before redirection
-            //window.location.href = "success.html";
-        //}, 1000);
+        setTimeout(() => { // wait 1 second before redirection
+            window.location.href = "success.html";
+        }, 1000);
     });
     </script>
 

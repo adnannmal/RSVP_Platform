@@ -8,28 +8,50 @@
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4"> <!--full screen layout with gray background and centered content-->
+<body class="bg-green-100 min-h-screen flex items-center justify-center p-4"> <!--full screen layout with gray background and centered content-->
 
-    <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md"> <!--white card container wiht shadow and padding-->
+    <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md"> <!--white card container with shadow and padding-->
         <h1 class="text-2xl font-bold mb-4 text-center">PSA Event RSVP <!--main heading-->
         </h1>
         
         <form id="rsvpForm" class="space-y-4"> <!--RSVP form with vertical spacing between fields-->
-            <input type="text" name="name" placeholder="Full Name" required class="w-full border p-2 rounded" /> <!--Input for name-->
+            <label class="block "> <!--Input for first name-->
+                <span class="text-gray-700">First Name 
+                </span>
+                <input type="text" name="lname" placeholder="First Name" required class="w-full border p-2  mt-2 rounded" />
+            
+            <label class="block mt-2"> <!--Input for last name-->
+                <span class="text-gray-700">Last Name 
+                </span>
+            <input type="text" name="lname" placeholder="Last Name" required class="w-full border p-2 mt-2 rounded" /> <!--Input for last name-->
 
-            <input type="email" name="email" placeholder="Email Address" required class="w-full border p-2 rounded" /> <!--Input for email-->
+            <label class="block mt-2"> <!--Input for ID #-->
+                <span class="text-gray-700">Hofstra ID
+                </span>
+            <input type="text" name="hofstraId" placeholder="h123456789" required class="w-full border p-2 mt-2 rounded" /> <!--Optional Input for hofstra ID-->
+            
+            <label class="block mt-2"> <!--Input email-->
+                <span class="text-gray-700">Email Address
+                </span>
+            <input type="email" name="email" placeholder="@pride.hofstra.edu" required pattern="^[a-zA-Z0-9._%+-]+@pride\.hofstra\.edu$" class="w-full border p-2 mt-2 rounded" /> <!--Input for email-->
 
-            <input type="text" name="hofstraId" placeholder="Hofstra ID (if student)" class="w-full border p-2 rounded" /> <!--Optional Input for hofstra ID-->
-
-            <select name="status" required class="w-full border p-2 rounded"> <!--Dropdown menu to select student or guest-->
-                <option value="">Are you a Hofstra student?</option>
-                <option value="student">Yes</option>
-                <option value="guest">No</option>
+            <label class="block mt-2 mb-2"> <!--Guest Dropdown-->
+                <span class="text-gray-700">Are you bringing guests?
+                </span>
+            <select name="status" required class="w-full border p-2 mt-2 rounded"> <!--Dropdown menu to select student or guest-->
+                <option value="student">No</option>
+                <option value="guest">Yes</option>
             </select>
+            </label>
 
-            <input type="text" name="dietary" placeholder="Dietary Restrictions (optional)" class="w-full border p-2 rounded" /> <!-- Optional dietary restrictions -->
+            <div id="dropdownField" class="block hidden">
+                <label class="block "> <!--Input for Guest 1 name-->
+                <span class="text-gray-700">Guest 1 First Name 
+                </span>
+                <input type="text" name="guest1fname" placeholder="First Name" required class="w-full border p-2  mt-2 rounded" />
+            </div>
 
-            <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Submit RSVP   <!--Submit button-->
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Submit RSVP   <!--Submit button-->
             </button>
         </form>
 
@@ -48,4 +70,5 @@
 - Add Background
 - Colors
 - Transition to new screen for successful submission
+- Add errors for incorrect email and Id without h
 -->

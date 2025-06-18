@@ -79,11 +79,65 @@
 
     </div>
 
+    <script>
+        document.getElementById("statusSelect").addEventListener("change", function () {
+        const selected = this.value;
+        const guestField = document.getElementById("guestField");
+
+        const guest1fname = document.getElementById("guest1fname");
+        const guest1lname = document.getElementById("guest1lname");
+        const guest2fname = document.getElementById("guest2fname");
+        const guest2lname = document.getElementById("guest2lname");
+
+        if (selected === "guest") {
+            guestField.classList.remove("hidden");
+            guest1fname.required = true;
+            guest1lname.required = true;
+            guest2fname.required = false;
+            guest2lname.required = false;
+        } 
+        else {
+            guestField.classList.add("hidden");
+            guest1fname.required = false;
+            guest1lname.required = false;
+            guest2fname.required = false;
+            guest2lname.required = false;
+        }
+        
+        });
+
+        document.getElementById("rsvpForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+        const form = e.target;
+
+        // Validate manually to prevent "not focusable" error
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const data = {
+            fname: form.fname.value,
+            lname: form.lname.value,
+            email: form.email.value,
+            hofstraId: form.hofstraId.value,
+            status: form.status.value,
+            guest1fname: form.guest1fname.value,
+            guest1lname: form.guest1lname.value,
+            guest2fname: form.guest2fname.value,
+            guest2lname: form.guest2lname.value,
+        };
+
+        console.log("Form submitted:", data);
+
+        document.getElementById("message").classList.remove("hidden");
+        form.reset();
+        document.getElementById("guestField").classList.add("hidden");
+    });
+    </script>
+
 </body>
-
-    <!-- Link to JavaScript file -->
-    <script src="myscript.js" defer></script>
-
 </html>
 
 

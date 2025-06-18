@@ -1,0 +1,6 @@
+- Fix Boxes
+- Add Background
+- Colors
+- Transition to new screen for successful submission
+- Add errors for incorrect email and Id without h
+- Geberate QR code to scan for ticket

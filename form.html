@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
 </head>
 
-<body class="bg-green-100 min-h-screen flex items-center justify-center p-4"> <!--full screen layout with gray background and centered content-->
+<body class="bg-green-100 min-h-screen flex items-center justify-center p-4"> <!--full screen layout with green background and centered content-->
 
     <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md"> <!--white card container with shadow and padding-->
         <h1 class="text-2xl font-bold mb-4 text-center">PSA Event RSVP <!--main heading-->
@@ -79,24 +79,28 @@
 
     </div>
 
+    <!-- Script for guest selection-->
+
     <script>
         document.getElementById("statusSelect").addEventListener("change", function () {
-        const selected = this.value;
-        const guestField = document.getElementById("guestField");
+        const selected = this.value; // get value from dropdown entry
+        const guestField = document.getElementById("guestField"); // script reference to submitted form
+
+        // input fields for guest names
 
         const guest1fname = document.getElementById("guest1fname");
         const guest1lname = document.getElementById("guest1lname");
         const guest2fname = document.getElementById("guest2fname");
         const guest2lname = document.getElementById("guest2lname");
 
-        if (selected === "guest") {
+        if (selected === "guest") { // if yes show guest fields and make guest 1 required
             guestField.classList.remove("hidden");
             guest1fname.required = true;
             guest1lname.required = true;
             guest2fname.required = false;
             guest2lname.required = false;
         } 
-        else {
+        else { // else all entry is hidden and requirement is removed
             guestField.classList.add("hidden");
             guest1fname.required = false;
             guest1lname.required = false;
@@ -106,16 +110,21 @@
         
         });
 
+        // Listens for form submission
+
         document.getElementById("rsvpForm").addEventListener("submit", function (e) {
-            e.preventDefault();
+            e.preventDefault(); // prevents page to reload
 
         const form = e.target;
 
         // Validate manually to prevent "not focusable" error
+
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
+
+        // collect data from form to objects
 
         const data = {
             fname: form.fname.value,
@@ -129,24 +138,19 @@
             guest2lname: form.guest2lname.value,
         };
 
-        console.log("Form submitted:", data);
+        console.log("Form submitted:", data); // log data to console
 
-        document.getElementById("message").classList.remove("hidden");
-        form.reset();
-        document.getElementById("guestField").classList.add("hidden");
+        document.getElementById("message").classList.remove("hidden"); // unhide success message
+
+        form.reset(); // clear form
+
+        document.getElementById("guestField").classList.add("hidden"); // hide guest fields after reset
+
+        setTimeout(() => { // wait 1 second before redirection
+            window.location.href = "success.html";
+        }, 1000);
     });
     </script>
 
 </body>
 </html>
-
-
-
-<!--Notes:
-- Fix Boxes
-- Add Background
-- Colors
-- Transition to new screen for successful submission
-- Add errors for incorrect email and Id without h
-- Geberate QR code to scan for ticket
--->

@@ -33,59 +33,19 @@
   
   
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const qrData = localStorage.getItem("qrData");
-      const userEmail = localStorage.getItem("userEmail");
-
-      if (!qrData) {
-        console.warn("No QR code data found in local storage");
-        return;
-      }
-
+    // Download QR code as PNG
+    const btn = document.getElementById("downloadBtn");
+    if (btn) {
+      btn.addEventListener("click", function () {
       const canvas = document.getElementById("qr-code");
-
-      // Render QR code
-      QRCode.toCanvas(canvas, qrData, function (error) {
-        if (error) {
-          console.error("QR Code generation failed", error);
-          return;
-        }
-        console.log("QR Code generated successfully");
-
-        // Send email with QR code image
-        const imgData = canvas.toDataURL("image/png");
-
-        const qrObject = JSON.parse(qrData);
-
-        emailjs.send("hofpsa", "template_yczzbhr", {
-          to_email: userEmail,
-          from_name: "PSA RSVP",
-          message: "Thank you for RSVPing! Your QR code ticket is attached.",
-          qrcode_dataurl: imgData
-        }).then(
-          function (response) {
-            console.log("Email sent successfully!", response.status, response.text);
-          },
-          function (error) {
-            console.error("Failed to send email", error);
-          }
-        );
+      const imgData = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = imgData;
+      link.download = "ticket.png";
+      link.click();
       });
-
-      // Download QR code as PNG
-      const btn = document.getElementById("downloadBtn");
-      if (btn) {
-        btn.addEventListener("click", function () {
-        const canvas = document.getElementById("qr-code");
-        const imgData = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.href = imgData;
-        link.download = "ticket.png";
-        link.click();
-        });
-      }
-    });
-
+    }
+    
   </script>
 </body>
 </html>

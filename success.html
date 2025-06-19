@@ -5,6 +5,11 @@
   <title>Thank You</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    emailjs.init("TBfzGP_u0hyoM6TEf"); // public key
+  </script>
+  
 </head>
 
 <body class="bg-green-100 min-h-screen flex flex-col items-center justify-center">
@@ -17,10 +22,14 @@
 
   <!--QR Code-->
   <div id="qr-container" class="text-center">
-    <p class="mb-2 mt-2 text-gray-800">Below is your Ticket:</p>
-    <p class="mb-2 text-gray-800">(All names listed are on the ticket)</p>
+    <p class="mb-2 mt-2 text-gray-800">Below is your Ticket 🎟️:</p>
+    <p class="mb-2 text-gray-800">(All names listed are on one ticket)</p>
     <canvas id="qr-code" class="mx-auto"></canvas>
+    <button type="download" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Dowload Ticket PDF   <!--Dowload button-->
+    </button>
   </div>
+
+  
   
   <script>
     const qrData = localStorage.getItem("qrData"); // load data from local storage
@@ -41,6 +50,25 @@
     else {
       console.warn("No QR code data found in local storage");
     }
+
+    const canvas = document.getElementById("qr-code");
+    const qrImage = canvas.toDataURL("image/png");
+
+    emailjs.send("TBfzGP_u0hyoM6TEf","TBfzGP_u0hyoM6TEf", { // public key, template id
+      to_email: form.email.value,
+      from_name: "PSA RSVP",
+      message: "Thank you for RSVPing! Your QR code ticket is attached.",
+      q_code: dataURL 
+    })
+    .then (
+      function(response){
+        console.log("Email sent!", rsponse.status, response.text);
+      },
+      function(error) {
+        console.error("Failed to send email!", error);
+      }
+    );
+
   </script>
 
 </body>

@@ -6,6 +6,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     emailjs.init("TBfzGP_u0hyoM6TEf"); // public key
   </script>
@@ -38,12 +39,15 @@
       const qrContainer = document.getElementById("qr-container");
       qrContainer.classList.remove("hidden");
 
-      QRCode.toCanvas(document.getElementById("qr-code"), qrData, function (error) { // check if qr generation is successful
+      QRCode.toCanvas(document.getElementById("qr-code"), qrData, function (error) { // generate qr code
+        // check if qr generation is successful
         if (error) {
           console.error("QR Code failed", error);
         }
         else {
           console.error("QR Code successful", error);
+
+          sendTicketEmail(JSON.parse(qrData)); // send qr ticket via email
         }
       });
     }
@@ -51,23 +55,14 @@
       console.warn("No QR code data found in local storage");
     }
 
-    const canvas = document.getElementById("qr-code");
-    const qrImage = canvas.toDataURL("image/png");
+    // pdf download when button is clicked
 
-    emailjs.send("TBfzGP_u0hyoM6TEf","TBfzGP_u0hyoM6TEf", { // public key, template id
-      to_email: form.email.value,
-      from_name: "PSA RSVP",
-      message: "Thank you for RSVPing! Your QR code ticket is attached.",
-      q_code: dataURL 
-    })
-    .then (
-      function(response){
-        console.log("Email sent!", rsponse.status, response.text);
-      },
-      function(error) {
-        console.error("Failed to send email!", error);
-      }
-    );
+    document.getElementById("downloadbut").addEventListener("download", function () {
+      html2pdf().from(document.getElementById("ticket")).outputPdf("datauristring").then((pdfDataUri) =>{ // generate pdf
+        // send email with emailjs
+        
+      })
+    });
 
   </script>
 

@@ -33,19 +33,41 @@
   
   
   <script>
-    // Download QR code as PNG
-    const btn = document.getElementById("downloadBtn");
-    if (btn) {
-      btn.addEventListener("click", function () {
+    document.addEventListener("DOMContentLoaded", function () {
+      const qrData = localStorage.getItem("qrData");
+      const userEmail = localStorage.getItem("userEmail");
+
+      if (!qrData) {
+        console.warn("No QR code data found in local storage");
+        return;
+      }
+
       const canvas = document.getElementById("qr-code");
-      const imgData = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = imgData;
-      link.download = "ticket.png";
-      link.click();
+
+      // Render QR code
+      QRCode.toCanvas(canvas, qrData, function (error) {
+        if (error) {
+          console.error("QR Code generation failed", error);
+          return;
+        }
+        console.log("QR Code generated successfully");
       });
-    }
-    
+    });
+
+      // Download QR code as PNG
+      const btn = document.getElementById("downloadBtn");
+      if (btn) {
+        btn.addEventListener("click", function () {
+        const canvas = document.getElementById("qr-code");
+        const imgData = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = imgData;
+        link.download = "ticket.png";
+        link.click();
+        });
+      }
+      
   </script>
+
 </body>
 </html>

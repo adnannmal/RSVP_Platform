@@ -132,13 +132,13 @@
             email: form.email.value,
             hofstraId: form.hofstraId.value,
             status: form.status.value,
-            guest1fname: form.guest1fname.value,
-            guest1lname: form.guest1lname.value,
-            guest2fname: form.guest2fname.value,
-            guest2lname: form.guest2lname.value,
+            guest1fname: form.guest1fname.value || "",
+            guest1lname: form.guest1lname.value || "",
+            guest2fname: form.guest2fname.value || "",
+            guest2lname: form.guest2lname.value || "",
         };
 
-        console.log("Form submitted:", data); // log data to console
+        //console.log("Form submitted:", data); // log data to console
 
         //document.getElementById("message").classList.remove("hidden"); // unhide success message
 
@@ -148,9 +148,9 @@
 
         // qr code gneration
 
-        const qrcode = JSON.stringify(data);
+        //const qrcode = JSON.stringify(data);
         
-        QRcode.toCanvas(document.getElementById("qr-code"), qrcode, function (error) {
+       /* QRcode.toCanvas(document.getElementById("qr-code"), qrcode, function (error) {
             if (error) {
                 console.error(error);
             }
@@ -160,6 +160,9 @@
             document.getElementById("qr-container").classList.remove("hidden"); // dsiplays qr code
 
         })
+        */
+
+        localStorage.setItem("qrData", JSON.stringify(data));
 
         setTimeout(() => { // wait 0.5 second before redirection
             window.location.href = "success.html";

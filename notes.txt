@@ -3,3 +3,4 @@
 - Colors
 - Add errors for incorrect email and Id without h
 - Geberate QR code to scan for ticket on success page
+- add time constraint to form

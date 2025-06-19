@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Thank You</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script> src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"</script>
 </head>
 
 <body class="bg-green-100 min-h-screen flex items-center justify-center">
@@ -17,8 +18,26 @@
     <canvas id="qr-code" class="mx-auto"></canvas>
   </div>
   
-  <script> src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"</script>
+  <script>
+    const qrData = localStorage.getItem("qrData"); // load data from local storage
 
+    if (qrData) {
+      const qrContainer = document.getElementById("qr-container");
+      qrContainer.classList.remove("hidden");
+
+      QRCode.toCanvas(document.getElementById("qr-code"), qrData, function (error) { // check if qr generation is successful
+        if (error) {
+          console.error("QR Code failed", error);
+        }
+        else {
+          console.error("QR Code successful", error);
+        }
+      });
+    }
+    else {
+      console.warn("No QR code data found in locla storage");
+    }
+  </script>
 
 </body>
 </html>

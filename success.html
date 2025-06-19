@@ -26,7 +26,7 @@
     <p class="mb-2 mt-2 text-gray-800">Below is your Ticket 🎟️:</p>
     <p class="mb-2 text-gray-800">(All names listed are on one ticket)</p>
     <canvas id="qr-code" class="mx-auto"></canvas>
-    <button type="downloadBtn" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Dowload Ticket PDF   <!--Dowload button-->
+    <button id="downloadBtn" type="button"  class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Dowload Ticket PDF   <!--Dowload button-->
     </button>
   </div>
 
@@ -73,20 +73,20 @@
       });
 
       // Download QR code as PNG
-      document.addEventListener("DOMContentLoaded", function () {
-        const btn = document.getElementById("downloadBtn");
-        if (btn) {
-          btn.addEventListener("click", function () {
-          const canvas = document.getElementById("qr-code");
-          const imgData = canvas.toDataURL("image/png");
-          const link = document.createElement("a");
-          link.href = imgData;
-          link.download = "ticket.png";
-          link.click();
-          });
-        }
-      });
+      const btn = document.getElementById("downloadBtn");
+      if (btn) {
+        btn.addEventListener("click", function () {
+        const canvas = document.getElementById("qr-code");
+        const imgData = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = imgData;
+        link.download = "ticket.png";
+        link.click();
+        });
+      }
     });
+
   </script>
+
 </body>
 </html>

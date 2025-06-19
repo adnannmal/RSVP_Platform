@@ -3,3 +3,5 @@
 - Colors
 - Make qr code take you to another page where data is dsiplayed after inputting code
 - add time constraint to form
+- move flags closer
+- start backend for excel and emai

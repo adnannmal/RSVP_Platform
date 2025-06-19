@@ -33,42 +33,53 @@
   
   
   <script>
-    // Retrieve  data from local storage
-    const qrData = localStorage.getItem("qrData");
+    document.addEventListener("DOMContentLoaded", function () {
+      const qrData = localStorage.getItem("qrData");
 
-    if (!qrData) {
-      console.warn("No QR code data found in local storage");
-    } 
-    else {
-      QRCode.toCanvas(document.getElementById("qr-code"), qrData, function (error) { // Generate QR code from the RSVP data
+      if (!qrData) {
+        console.warn("No QR code data found in local storage");
+        return;
+      }
+
+      const canvas = document.getElementById("qr-code");
+
+      // Render QR code
+      QRCode.toCanvas(canvas, qrData, function (error) {
         if (error) {
-          console.error("QR generation failed", error);
-        } 
-        else {
-          console.log("QR generated successfully");
-          sendTicketEmail(JSON.parse(qrData)); // Send the QR ticket via email
+          console.error("QR Code generation failed", error);
+          return;
         }
-      });
+        console.log("QR Code generated successfully");
 
-      document.getElementById("downloadBtn").addEventListener("click", function () { // PDF download when button is clicked
-        html2pdf().from(document.getElementById("ticket")).save("PSA_Ticket.pdf");
-      });
-    }
+        // Send email with QR code image
+        const imgData = canvas.toDataURL("image/png");
 
-    function sendTicketEmail(data) { // Function to send an email with PDF attached
-      html2pdf().from(document.getElementById("ticket")).outputPdf("datauristring").then((pdfDataUri) => { // Generate the PDF and get it as a Data URI
-        
-        emailjs.send("TBfzGP_u0hyoM6TEf", "template_yczzbhr", { // Send email using EmailJS
-          to_email: data.email,             // recipient's email
-          from_name: "PSA RSVP",            // sender's name
-          message: "Thank you for RSVPing! Your ticket is attached as a PDF.",
-          pdf_data: pdfDataUri              // encoded PDF as string
+        const qrObject = JSON.parse(qrData);
+
+        emailjs.send("TBfzGP_u0hyoM6TEf", "template_yczzbhr", {
+          to_email: qrObject.email,
+          from_name: "PSA RSVP",
+          message: "Thank you for RSVPing! Your QR code ticket is attached.",
+          qrcode_dataurl: imgData
         }).then(
-          (response) => console.log("Email sent!", response.status, response.text),
-          (error) => console.error("Email failed", error)
+          function (response) {
+            console.log("Email sent successfully!", response.status, response.text);
+          },
+          function (error) {
+            console.error("Failed to send email", error);
+          }
         );
       });
-    }
+
+      // Download QR code as PNG
+      document.getElementById("downloadBtn").addEventListener("click", function () {
+        const img = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = img;
+        link.download = "ticket.png";
+        link.click();
+      });
+    });
   </script>
 </body>
 </html>

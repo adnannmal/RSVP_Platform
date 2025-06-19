@@ -35,6 +35,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const qrData = localStorage.getItem("qrData");
+      const userEmail = localStorage.getItem("userEmail");
 
       if (!qrData) {
         console.warn("No QR code data found in local storage");
@@ -57,7 +58,7 @@
         const qrObject = JSON.parse(qrData);
 
         emailjs.send("hofpsa", "template_yczzbhr", {
-          to_email: qrObject.email,
+          to_email: userEmail,
           from_name: "PSA RSVP",
           message: "Thank you for RSVPing! Your QR code ticket is attached.",
           qrcode_dataurl: imgData

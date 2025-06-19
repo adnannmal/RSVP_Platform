@@ -9,8 +9,16 @@
 <body class="bg-green-100 min-h-screen flex items-center justify-center">
   <div class="text-center p-6 bg-white rounded-lg shadow-lg">
     <h1 class="text-3xl font-bold text-green-700 mb-2">🎉 Thank You!</h1>
-    <p class="text-gray-700">Your RSVP has been submitted successfully.</p>
+    <p class="text-gray-700"></p>Your RSVP has been submitted successfully.</p>
+  </div>
+
+  <div id="qr-container" class="hidden mt-4 text-center">
+    <p class="mb-2">Scan this QR code at the event:</p>
+    <canvas id="qr-code" class="mx-auto"></canvas>
   </div>
   
+  <script> src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"</script>
+
+
 </body>
 </html>

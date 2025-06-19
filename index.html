@@ -146,6 +146,21 @@
 
         //document.getElementById("guestField").classList.add("hidden"); // hide guest fields after reset
 
+        // qr code gneration
+
+        const qrcode = JSON.stringify(data);
+        
+        QRcode.toCanvas(document.getElementById("qr-code"), qrcode, function (error) {
+            if (error) {
+                console.error(error);
+            }
+            else {
+                console.log("QR code generated!");
+            }
+            document.getElementById("qr-container").classList.remove("hidden"); // dsiplays qr code
+
+        })
+
         setTimeout(() => { // wait 0.5 second before redirection
             window.location.href = "success.html";
         }, 500);

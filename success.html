@@ -33,38 +33,42 @@
   
   
   <script>
-    const qrData = localStorage.getItem("qrData"); // load data from local storage
+    // Retrieve  data from local storage
+    const qrData = localStorage.getItem("qrData");
 
-    if (qrData) {
-      const qrContainer = document.getElementById("qr-container");
-      qrContainer.classList.remove("hidden");
-
-      QRCode.toCanvas(document.getElementById("qr-code"), qrData, function (error) { // generate qr code
-        // check if qr generation is successful
+    if (!qrData) {
+      console.warn("No QR code data found in local storage");
+    } 
+    else {
+      QRCode.toCanvas(document.getElementById("qr-code"), qrData, function (error) { // Generate QR code from the RSVP data
         if (error) {
-          console.error("QR Code failed", error);
-        }
+          console.error("QR generation failed", error);
+        } 
         else {
-          console.error("QR Code successful", error);
-
-          sendTicketEmail(JSON.parse(qrData)); // send qr ticket via email
+          console.log("QR generated successfully");
+          sendTicketEmail(JSON.parse(qrData)); // Send the QR ticket via email
         }
       });
-    }
-    else {
-      console.warn("No QR code data found in local storage");
+
+      document.getElementById("downloadBtn").addEventListener("click", function () { // PDF download when button is clicked
+        html2pdf().from(document.getElementById("ticket")).save("PSA_Ticket.pdf");
+      });
     }
 
-    // pdf download when button is clicked
-
-    document.getElementById("downloadbut").addEventListener("download", function () {
-      html2pdf().from(document.getElementById("ticket")).outputPdf("datauristring").then((pdfDataUri) =>{ // generate pdf
-        // send email with emailjs
+    function sendTicketEmail(data) { // Function to send an email with PDF attached
+      html2pdf().from(document.getElementById("ticket")).outputPdf("datauristring").then((pdfDataUri) => { // Generate the PDF and get it as a Data URI
         
-      })
-    });
-
+        emailjs.send("TBfzGP_u0hyoM6TEf", "template_yczzbhr", { // Send email using EmailJS
+          to_email: data.email,             // recipient's email
+          from_name: "PSA RSVP",            // sender's name
+          message: "Thank you for RSVPing! Your ticket is attached as a PDF.",
+          pdf_data: pdfDataUri              // encoded PDF as string
+        }).then(
+          (response) => console.log("Email sent!", response.status, response.text),
+          (error) => console.error("Email failed", error)
+        );
+      });
+    }
   </script>
-
 </body>
 </html>

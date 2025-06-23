@@ -1,6 +1,7 @@
 <!DOCTYPE html> <!-- recognizes file type as HTML-->
 
 <html lang="en"> <!--sets language to english and opens document-->
+
 <head>
     <meta charset="UTF-8" /> <!--tells web bnowser to interpret doc using UTF-8 encoding-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
@@ -8,19 +9,23 @@
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
 </head>
 
-<body class="bg-gradient-to-br from-green-100 via-white to-green-200 min-h-screen flex items-center justify-center p-4" style="background: radial-gradient(circle at top left, #a7f3d0, transparent 70%), radial-gradient(circle at bottom right, #34d399, transparent 70%);"> <!--full screen layout with green background and centered content-->
-<!-- <body class="bg-cover bg-center" style="background-image: url('your-image.jpg');"> image as background-->
+<!--full screen layout with green background and centered content-->
+
+<body class="bg-gradient-to-br from-green-100 via-white to-green-200 min-h-screen flex items-center justify-center p-4" 
+    style="background: radial-gradient(circle at top left, #34d399, transparent 70%), radial-gradient(circle at bottom right, #34d399, transparent 70%);">
 
     <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md"> <!--white card container with shadow and padding-->
         <h1 class="text-3xl font-extrabold mb-6 text-center text-green-700">PSA Event RSVP <!--main heading-->
         </h1>
 
+        <!--flag pictures-->
+
         <img src="pak_flag.png" alt="rightFlag"class="absolute top-6 right-12 w-32 transform rotate-12 opacity-90 pointer-events-none" />
         <img src="pak_flag.png" alt="leftFlag"class="absolute top-6 left-12 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
 
+        <!--RSVP Form-->
 
-
-        <form id="rsvpForm" class="space-y-4"> <!--RSVP form with vertical spacing between fields-->
+        <form id="rsvpForm" class="space-y-4">
             <label class="block "> <!--Input for first name-->
                 <span class="text-gray-700">First Name 
                 </span>
@@ -40,7 +45,10 @@
                 <span class="text-gray-700">Email Address
                 </span>
             <input type="email" name="email" required placeholder="@pride.hofstra.edu" pattern=".+@pride\.hofstra\.edu" class="w-full border p-2 mt-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition" />
-            <label class="block mt-2 mb-2"> <!--Guest Dropdown-->
+            
+            <!--Guest Dropdown-->
+
+            <label class="block mt-2 mb-2">
                 <span class="text-gray-700">Are you bringing guests?
                 </span>
             <select name="status" id="statusSelect" required class="w-full border p-2 mt-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition"> <!--Dropdown menu to select student or guest-->
@@ -77,12 +85,11 @@
             </div>
 
             <!-- Submit Button -->
+
             <button type="submit" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Submit RSVP
             </button>
-        </form>
 
-        <p id="message" class="mt-4 text-center text-green-600 hidden">Submitted successfully!
-        </p>
+        </form>
 
     </div>
 
@@ -147,27 +154,9 @@
 
         //console.log("Form submitted:", data); // log data to console
 
-        //document.getElementById("message").classList.remove("hidden"); // unhide success message
-
         //form.reset(); // clear form
 
-        //document.getElementById("guestField").classList.add("hidden"); // hide guest fields after reset
-
-        // qr code gneration
-
-        //const qrcode = JSON.stringify(data);
-        
-       /* QRcode.toCanvas(document.getElementById("qr-code"), qrcode, function (error) {
-            if (error) {
-                console.error(error);
-            }
-            else {
-                console.log("QR code generated!");
-            }
-            document.getElementById("qr-container").classList.remove("hidden"); // dsiplays qr code
-
-        })
-        */
+        // store form data locally
 
         localStorage.setItem("qrData", JSON.stringify(data));
         localStorage.setItem("userEmail", form.email.value); 

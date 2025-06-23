@@ -1,8 +1,49 @@
-<!-- 
- 
-This is where ticket info will be dsiplayed after barcode is scanned
-Only  Names to verify upon arrival
+<!--Opened when barcoe is scanned-->
 
-Add Password check itll be a simple pin to add extra security
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
+  <meta charset="UTF-8" />
+  <title>Ticket</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
+</head>
 
--->
+<body class="bg-blue-300 min-h-screen flex flex-col items-center justify-center">
+
+    <!--Password Entry-->
+
+    <div id="authUser" class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md">
+        <h1 class="text-3xl font-bold mb-6 text-center text-black-700">Enter PIN to View Ticket <!--main heading-->
+        </h1>
+
+        <label class="block "> <!--Input for first name-->
+                <span class="text-gray-700">
+                </span>
+                <input type="text" name="pass" placeholder="PIN" required class="w-full border p-2  mt-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition" />
+        </label>
+
+        <button onclick="checkPass()" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Submit <!--Submit Button-->
+        </button>
+
+        <p id="error" class="text-red-500 font-bold hidden mt-2">Incorrect password</p>
+
+         <!-- Ticket information display (initially hidden) -->
+
+        <div id="ticket" class="hidden mt-4 p-6 bg-white rounded shadow max-w-md w-full"></div>
+
+    </div>
+
+    <script>
+        const password = "412341"; // set password for entry
+
+        function checkPass() { // verify password and display ticket
+
+        }
+
+
+    </script>
+
+</body>
+</html>

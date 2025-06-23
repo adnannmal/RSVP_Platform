@@ -5,11 +5,13 @@
   <meta charset="UTF-8" />
   <title>Thank You</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
 </head>
 
 <body class="bg-green-100 min-h-screen flex flex-col items-center justify-center">
+
   <!--Thank you message-->
+
   <div class="text-center p-3 bg-white rounded-lg shadow-lg">
     <h1 class="text-3xl font-bold text-green-700 mb-2">🎉 Thank You!</h1>
     <p class="text-gray-700">Your RSVP has been submitted successfully.</p>
@@ -17,6 +19,7 @@
   </div>
 
   <!--QR Code-->
+
   <div id="qr-container" class="text-center">
     <p class="mb-2 mt-2 text-gray-800">Below is your Ticket 🎟️:</p>
     <p class="mb-2 text-gray-800">(All names listed are on one ticket)</p>
@@ -32,7 +35,7 @@
       const qrData = localStorage.getItem("qrData");
       const userEmail = localStorage.getItem("userEmail");
 
-      if (!qrData) {
+      if (!qrData) { // check for locally stored qr code data
         console.warn("No QR code data found in local storage");
         return;
       }
@@ -40,6 +43,7 @@
       const canvas = document.getElementById("qr-code");
 
       // Render QR code
+
       QRCode.toCanvas(canvas, qrData, function (error) {
         if (error) {
           console.error("QR Code generation failed", error);
@@ -50,6 +54,7 @@
     });
 
       // Download QR code as PNG
+      
       const btn = document.getElementById("downloadBtn");
       if (btn) {
         btn.addEventListener("click", function () {

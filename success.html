@@ -42,22 +42,25 @@
 
       const canvas = document.getElementById("qr-code");
 
+      //const allData = {
+        //qrData: qrData,
+        //email: userEmail
+      //};
+
+      // Encode QR code with form data and transition to ticket.html
+
+      const encoded = encodeURIComponent(JSON.stringify(data));
+      const ticketUri = "https://psa-rsvp.vercel.app/ticket.html?data=${encoded}";
+
       // Render QR code
 
-      QRCode.toCanvas(canvas, qrData, function (error) {
+      QRCode.toCanvas(canvas, ticketUri, function (error) {
         if (error) {
           console.error("QR Code generation failed", error);
           return;
         }
         console.log("QR Code generated successfully");
       });
-
-      // Encode QR code with form data and transition to ticket.html
-
-      const encoded = encodeURIComponent(JSON.stringify(data));
-      const ticketUri = "https://psa-rsvp.vercel.app/ticket.html?data=${encoded}";
-      QRCode.toCanvas(document.getElementById("qr-code"), ticketUri);
-
     });
 
       // Download QR code as PNG

@@ -56,21 +56,34 @@
         function checkPass() {
             const input = document.getElementById("pass").value;
 
-            // check password
-
             if (input === password) {
                 document.getElementById("authUser").classList.add("hidden");
 
                 const ticket = document.getElementById("ticket");
 
-                // display ticket info
+                // Build guest info if provided
 
-                ticket.innerHTML = `<h2 class="text-xl font-bold mb-2">🎟️ Ticket Info</h2> <p><strong>Name:</strong> ${data.fname} ${data.lname}</p>
-                    <p><strong>Guests:</strong> ${data.guest1fname} ${data.guest1lname}, ${data.guest2fname} ${data.guest2lname}</p>`;
+                let guests = "";
+                if (data.guest1fname || data.guest1lname) {
+                    guests += `<li>${data.guest1fname} ${data.guest1lname}</li>`;
+                }
+                if (data.guest2fname || data.guest2lname) {
+                    guests += `<li>${data.guest2fname} ${data.guest2lname}</li>`;
+                }
+
+                // Construct ticket HTML
+
+                ticket.innerHTML = `
+                    <h2 class="text-xl font-bold mb-2">🎟️ Ticket Info</h2>
+                    <p><strong>Name:</strong> ${data.fname} ${data.lname}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p><strong>ID:</strong> ${data.hofstraId}</p>
+                    ${guests ? `<p><strong>Guests:</strong></p><ul class="list-disc list-inside ml-4">${guests}</ul>` : ""}
+                `;
 
                 ticket.classList.remove("hidden");
             } 
-            else { // Show error if password is incorrect
+            else {
                 document.getElementById("error").classList.remove("hidden");
             }
         }

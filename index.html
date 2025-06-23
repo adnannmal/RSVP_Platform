@@ -158,8 +158,8 @@
 
         // store form data locally
 
-        //localStorage.setItem("qrData", JSON.stringify(data));
-        //localStorage.setItem("userEmail", form.email.value); 
+        localStorage.setItem("qrData", JSON.stringify(data));
+        localStorage.setItem("userEmail", form.email.value); 
 
         setTimeout(() => { // wait 0.5 second before redirection
             window.location.href = "success.html";

@@ -32,7 +32,6 @@
   
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      /*
       const qrData = localStorage.getItem("qrData");
       const userEmail = localStorage.getItem("userEmail");
 
@@ -40,8 +39,7 @@
         console.warn("No QR code data found in local storage");
         return;
       }
-      */
-     
+
       const canvas = document.getElementById("qr-code");
 
       // Render QR code
@@ -53,6 +51,13 @@
         }
         console.log("QR Code generated successfully");
       });
+
+      // Encode QR code with form data and transition to ticket.html
+
+      const encoded = encodeURIComponent(JSON.stringify(data));
+      const ticketUri = "https://psa-rsvp.vercel.app/ticket.html?data=${encoded}";
+      QRCode.toCanvas(document.getElementById("qr-code"), ticketUri);
+
     });
 
       // Download QR code as PNG
@@ -68,12 +73,6 @@
         link.click();
         });
       }
-
-      // Encode QR code with form data and transition to ticket.html
-
-      const encoded = encodeURIComponent(JSON.stringify(data));
-      const ticketUri = "https://psa-rsvp.vercel.app/ticket.html?data=${encoded}";
-      QRCode.toCanvas(document.getElementById("qr-code"), ticketUri);
 
   </script>
 

@@ -38,13 +38,20 @@
     <script>
         const password = "412341"; // set password for entry
 
-        // Parse query string to get data from QR code
+        let data;
+        try {
+            // get data from QR code
 
-        const query = new URLSearchParams(window.location.search);
+            const query = new URLSearchParams(window.location.search);
 
-        // Decode the data string back to a JavaScript object
-
-        const data = JSON.parse(decodeURIComponent(query.get("data")));
+            // decode  data string back to a
+            //  object
+            data = JSON.parse(decodeURIComponent(query.get("data")));
+        } 
+        catch (err) {
+            document.body.innerHTML = `<p class="text-red-700 text-center font-bold">Invalid or missing QR data.</p>`;
+            throw err;
+        }
 
          // verify password and display ticket
 
@@ -52,7 +59,7 @@
             const input = document.getElementById("pass").value;
 
             if (input === password) {
-                document.getElementById("authUser"),classList.add("hidden");
+                document.getElementById("authUser").classList.add("hidden");
 
                 const ticket = document.getElementById("ticket");
 

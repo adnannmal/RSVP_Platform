@@ -42,15 +42,15 @@
 
       const canvas = document.getElementById("qr-code");
 
-      //const allData = {
-        //qrData: qrData,
-        //email: userEmail
-      //};
+      const allData = {
+        qrData: qrData,
+        email: userEmail
+      };
 
       // Encode QR code with form data and transition to ticket.html
 
       const encoded = encodeURIComponent(JSON.stringify(data));
-      const ticketUri = "https://psa-rsvp.vercel.app/ticket.html?data=${encoded}";
+      const ticketUri = `https://psa-rsvp.vercel.app/ticket.html?data=${encoded}`;
 
       // Render QR code
 

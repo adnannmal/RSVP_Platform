@@ -65,30 +65,8 @@
 
                 // display ticket info
 
-                //ticket.innerHTML = `<h2 class="text-xl font-bold mb-2">🎟️ Ticket Info</h2> <p><strong>Name:</strong> ${data.fname} ${data.lname}</p>
-                    //<p><strong>Guests:</strong> ${data.guest1fname} ${data.guest1lname}, ${data.guest2fname} ${data.guest2lname}</p>`;
-
-                let guestHTML = "";
-
-                if (data.guest1fname || data.guest1lname) {
-                    guestHTML += `<li>${data.guest1fname} ${data.guest1lname}</li>`;
-                }   
-                if (data.guest2fname || data.guest2lname) {
-                    guestHTML += `<li>${data.guest2fname} ${data.guest2lname}</li>`;
-                }
-
-                ticket.innerHTML = `
-                    <div class="bg-white rounded-lg shadow p-4 text-left space-y-2">
-                        <h2 class="text-2xl font-bold text-green-700 mb-4">🎟️ Your Event Ticket</h2>
-                        <p><strong>Full Name:</strong> ${data.fname} ${data.lname}</p>
-                    ${guestHTML
-                        ? `<div>
-                        <p class="font-semibold mt-2">Guests:</p>
-                        <ul class="list-disc list-inside text-gray-700">${guestHTML}</ul>
-                    </div>`
-                : ""}
-            </div>
-        `;
+                ticket.innerHTML = `<h2 class="text-xl font-bold mb-2">🎟️ Ticket Info</h2> <p><strong>Name:</strong> ${data.fname} ${data.lname}</p>
+                    <p><strong>Guests:</strong> ${data.guest1fname} ${data.guest1lname}, ${data.guest2fname} ${data.guest2lname}</p>`;
 
                 ticket.classList.remove("hidden");
             } 

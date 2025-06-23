@@ -1,3 +1,97 @@
 <!-- Use to test large additions of code to make webpage look cleaner or test out new functions-->
 
 <!--Opened when barcoe is scanned-->
+
+<!-- Opened when barcode is scanned -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <title>Ticket</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!-- QR code builder -->
+</head>
+
+<body class="bg-blue-300 min-h-screen flex flex-col items-center justify-center">
+
+  <!-- PIN Entry Box -->
+  <div id="authUser" class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md">
+    <h1 class="text-3xl font-bold mb-6 text-center text-black">Enter PIN to View Ticket</h1>
+
+    <label class="block">
+      <input
+        id="pass"
+        type="text"
+        name="inputPass"
+        placeholder="6-digit PIN"
+        pattern="\\d{6}"
+        required
+        class="w-full border p-2 mt-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+      />
+    </label>
+
+    <button
+      onclick="checkPass()"
+      class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full"
+    >
+      Submit
+    </button>
+
+    <p id="error" class="text-red-500 font-bold hidden mt-2">Incorrect password</p>
+  </div>
+
+  <!-- Ticket Display -->
+  <div id="ticket" class="hidden mt-4 p-6 bg-white rounded shadow max-w-md w-full"></div>
+
+  <script>
+    const password = "412341"; // 6-digit PIN
+
+    let data;
+    try {
+      // Extract QR data from query string
+      const query = new URLSearchParams(window.location.search);
+      data = JSON.parse(decodeURIComponent(query.get("data")));
+      console.log("Decoded data:", data);
+    } catch (err) {
+      document.body.innerHTML = `<p class="text-red-700 text-center font-bold">Invalid or missing QR data.</p>`;
+      throw err;
+    }
+
+    // Verify PIN and show ticket
+    function checkPass() {
+      const input = document.getElementById("pass").value;
+
+      if (input === password) {
+        document.getElementById("authUser").classList.add("hidden");
+
+        const ticket = document.getElementById("ticket");
+
+        // Build guest info if provided
+        let guests = "";
+        if (data.guest1fname || data.guest1lname) {
+          guests += `<li>${data.guest1fname} ${data.guest1lname}</li>`;
+        }
+        if (data.guest2fname || data.guest2lname) {
+          guests += `<li>${data.guest2fname} ${data.guest2lname}</li>`;
+        }
+
+        // Construct ticket HTML
+        ticket.innerHTML = `
+          <h2 class="text-xl font-bold mb-2">🎟️ Ticket Info</h2>
+          <p><strong>Name:</strong> ${data.fname} ${data.lname}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>ID:</strong> ${data.hofstraId}</p>
+          ${guests ? `<p><strong>Guests:</strong></p><ul class="list-disc list-inside ml-4">${guests}</ul>` : ""}
+        `;
+
+        ticket.classList.remove("hidden");
+      } else {
+        document.getElementById("error").classList.remove("hidden");
+      }
+    }
+  </script>
+
+</body>
+</html>

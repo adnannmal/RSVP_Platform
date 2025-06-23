@@ -32,6 +32,7 @@
   
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+      /*
       const qrData = localStorage.getItem("qrData");
       const userEmail = localStorage.getItem("userEmail");
 
@@ -39,7 +40,8 @@
         console.warn("No QR code data found in local storage");
         return;
       }
-
+      */
+     
       const canvas = document.getElementById("qr-code");
 
       // Render QR code
@@ -54,7 +56,7 @@
     });
 
       // Download QR code as PNG
-      
+
       const btn = document.getElementById("downloadBtn");
       if (btn) {
         btn.addEventListener("click", function () {

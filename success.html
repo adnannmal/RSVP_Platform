@@ -49,7 +49,7 @@
 
       // Encode QR code with form data and transition to ticket.html
 
-      const encoded = encodeURIComponent(JSON.stringify(data));
+      const encoded = encodeURIComponent(JSON.stringify(allData));
       const ticketUri = `https://psa-rsvp.vercel.app/ticket.html?data=${encoded}`;
 
       // Render QR code

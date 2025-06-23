@@ -38,8 +38,33 @@
     <script>
         const password = "412341"; // set password for entry
 
-        function checkPass() { // verify password and display ticket
+        // Parse query string to get data from QR code
 
+        const query = new URLSearchParams(window.location.search);
+
+        // Decode the data string back to a JavaScript object
+
+        const data = JSON.parse(decodeURIComponent(query.get("data")));
+
+         // verify password and display ticket
+
+        function checkPass() {
+            const input = document.getElementById("pass").value;
+
+            if (input === password) {
+                document.getElementById("authUser"),classList.add("hidden");
+
+                const ticket = document.getElementById("ticket");
+
+                ticket.innerHTML = `<h2 class="text-xl font-bold mb-2">🎟️ Ticket Info</h2> <p><strong>Name:</strong> ${data.fname} ${data.lname}</p>
+                    <p><strong>Email:</strong> ${data.email}</p> <p><strong>ID:</strong> ${data.hofstraId}</p>
+                    <p><strong>Guests:</strong> ${data.guest1fname} ${data.guest1lname}, ${data.guest2fname} ${data.guest2lname}</p>`;
+
+                ticket.classList.remove("hidden");
+            } 
+            else { // Show error if password is incorrect
+                document.getElementById("error").classList.remove("hidden");
+            }
         }
 
 

@@ -152,14 +152,11 @@
             guest2lname: form.guest2lname.value || "",
         };
 
-        //console.log("Form submitted:", data); // log data to console
-
-        //form.reset(); // clear form
+        console.log("Form submitted:", data); // confirm data is being correctly stored
 
         // store form data locally
 
         localStorage.setItem("qrData", JSON.stringify(data)); // store data locally into qrCode
-        //localStorage.setItem("userEmail", form.email.value);  // store email data locally
 
         setTimeout(() => { // wait 0.5 second before redirection
             window.location.href = "success.html";

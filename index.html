@@ -1,11 +1,11 @@
-<!DOCTYPE html> <!-- recognizes file type as HTML-->
+<!DOCTYPE html> <!--recognizes file type as HTML-->
 
-<html lang="en"> <!--sets language to english and opens document-->
+<html lang="en"> <!--sets language to english-->
 
 <head>
-    <meta charset="UTF-8" /> <!--tells web bnowser to interpret doc using UTF-8 encoding-->
+    <meta charset="UTF-8" /> <!--tells web browser to interpret doc using UTF-8 encoding-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
-    <title>PSA RSVP Form</title> <!--Title shown in browser-->
+    <title>PSA RSVP Form</title> <!--Title shown in browser tab-->
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
 </head>
 
@@ -14,7 +14,7 @@
 <body class="bg-gradient-to-br from-green-100 via-white to-green-200 min-h-screen flex items-center justify-center p-4" 
     style="background: radial-gradient(circle at top left, #34d399, transparent 70%), radial-gradient(circle at bottom right, #34d399, transparent 70%);">
 
-    <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md"> <!--white card container with shadow and padding-->
+    <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md"> <!--white container with shadow and padding-->
         <h1 class="text-3xl font-extrabold mb-6 text-center text-green-700">PSA Event RSVP <!--main heading-->
         </h1>
 
@@ -36,7 +36,7 @@
                 </span>
             <input type="text" name="lname" placeholder="Last Name" required class="w-full border p-2 mt-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition" /> <!--Input for last name-->
 
-            <label class="block mt-2"> <!--Input for ID #-->
+            <label class="block mt-2"> <!--Input for ID#-->
                 <span class="text-gray-700">Hofstra ID
                 </span>
             <input type="text" name="hofstraId" placeholder="h123456789" pattern="^h\d{9}$" required class="w-full border p-2 mt-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition" /> <!--Optional Input for hofstra ID-->
@@ -158,8 +158,8 @@
 
         // store form data locally
 
-        localStorage.setItem("qrData", JSON.stringify(data));
-        localStorage.setItem("userEmail", form.email.value); 
+        localStorage.setItem("qrData", JSON.stringify(data)); // store data locally into qrCode
+        //localStorage.setItem("userEmail", form.email.value);  // store email data locally
 
         setTimeout(() => { // wait 0.5 second before redirection
             window.location.href = "success.html";

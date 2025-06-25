@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
   <meta charset="UTF-8" />
@@ -32,8 +34,10 @@
   
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const qrData = localStorage.getItem("qrData");
-      const userEmail = localStorage.getItem("userEmail");
+      const qrRaw = localStorage.getItem("qrData"); // get data from qrCode
+      const qrFata = JSON.parse(qrRaw); // parse and turn it back into object to allow for proper encoding
+
+      //const userEmail = localStorage.getItem("userEmail");
 
       if (!qrData) { // check for locally stored qr code data
         console.warn("No QR code data found in local storage");
@@ -61,9 +65,9 @@
 
       // Download QR code as PNG
 
-      const btn = document.getElementById("downloadBtn");
-      if (btn) {
-        btn.addEventListener("click", function () {
+      const dowloadButton = document.getElementById("downloadBtn");
+      if (button) {
+        dowloadButton.addEventListener("click", function () {
         const canvas = document.getElementById("qr-code");
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");

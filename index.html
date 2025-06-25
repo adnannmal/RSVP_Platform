@@ -4,16 +4,9 @@
 
 <head>
     <meta charset="UTF-8" /> <!--tells web browser to interpret doc using UTF-8 encoding-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" /> <!--allows for mobile compatibility-->
     <title>PSA RSVP Form</title> <!--Title shown in browser tab-->
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
-
-    <style> 
-    html, body {
-        height: 100%;
-    }
-    </style>
-
 </head>
 
 <!--full screen layout with green background and centered content--> 
@@ -97,9 +90,7 @@
                 <button type="submit" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Submit RSVP
                 </button>
             </div>
-
         </form>
-
     </div>
             
     <!--Contact Info-->
@@ -115,13 +106,12 @@
 
     <!--Contact Button at bottom of page-->
 
-    <div class="fixed bottom-0 left-0 w-full bg-white py-2 text-right">
+    <div class="fixed bottom-0 right-0 w-full bg-white py-2 pl-6">
 
         <!--Contact Button-->
 
         <button onclick="openPage()" type="contact" class="text-sm text-blue-700 underline hover:text-blue-900">Contact Us
         </button>
-
     </div>
         
     </div>
@@ -211,6 +201,5 @@
     }
 
     </script>
-
 </body>
 </html>

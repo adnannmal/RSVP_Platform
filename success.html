@@ -35,7 +35,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const qrRaw = localStorage.getItem("qrData"); // get data from qrCode
-      const qrFata = JSON.parse(qrRaw); // parse and turn it back into object to allow for proper encoding
+      const qrData = JSON.parse(qrRaw); // parse and turn it back into object to allow for proper encoding
 
       //const userEmail = localStorage.getItem("userEmail");
 
@@ -66,7 +66,7 @@
       // Download QR code as PNG
 
       const dowloadButton = document.getElementById("downloadBtn");
-      if (button) {
+      if (dowloadButton) {
         dowloadButton.addEventListener("click", function () {
         const canvas = document.getElementById("qr-code");
         const imgData = canvas.toDataURL("image/png");

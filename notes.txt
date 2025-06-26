@@ -1,4 +1,5 @@
 To do:
+- Fix Flags to stay on top of form
 - Improve all pages appearence (make it look nicer, maybe some animations and etc...)
 - Add autosave feature (in case they refresh mid-entry)
 - Provide real-time validation (e.g. "Invalid ID format" as you type)

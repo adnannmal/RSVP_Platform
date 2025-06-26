@@ -50,7 +50,7 @@
             const dateNow = new Date();
             const dateExpire = new Date(data.dataExpire);
 
-            if (dateNow > dateExpire) {
+            if (dateNow < dateExpire) {
                 document.body.innerHTML = `<p class="text-red-600 text-center font-bold text-xl mt-10">❌ This ticket has expired.</p>`;
                     
                 throw new Error("Ticket expired");

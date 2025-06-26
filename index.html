@@ -125,7 +125,7 @@
         const selected = this.value; // get value from dropdown entry
         const guestField = document.getElementById("guestField"); // script reference to submitted form
         const dateNow = new Date();
-        const formExpire = new Date("2025-06-27T00:00:00Z").toISOString(); // form expiration
+        const formExpire = new Date("2025-06-26T00:00:00Z").toISOString(); // form expiration
 
         if (dateNow > formExpire) {    
             submit.classList.add("hidden");

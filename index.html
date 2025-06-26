@@ -119,8 +119,10 @@
     </div>
 
     <script>
+        // form expiration
+
         const dateNow = new Date();
-        const formExpire = new Date("2025-07-01T01:00:00Z"); // form expiration
+        const formExpire = new Date("2025-07-01T01:00:00Z");
 
         if (dateNow > formExpire) {
             const submitBtn = document.getElementById('submitBtn')
@@ -175,7 +177,7 @@
 
             const qrExpire = new Date("2025-07-01T00:00:00Z").toISOString();
 
-        // collect data from form to objects
+            // collect data from form to objects
 
             const data = {
                 fname: form.fname.value,

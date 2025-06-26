@@ -87,7 +87,7 @@
             <!-- Submit Button -->
 
             <div>
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Submit RSVP
+                <button id="submitBtn" type="submit" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Submit RSVP
                 </button>
             </div>
         </form>
@@ -125,10 +125,13 @@
         const selected = this.value; // get value from dropdown entry
         const guestField = document.getElementById("guestField"); // script reference to submitted form
         const dateNow = new Date();
-        const formExpire = new Date("2025-06-26T00:00:00Z").toISOString(); // form expiration
+        const formExpire = new Date("2025-06-26T00:00:00Z"); // form expiration
 
-        if (dateNow > formExpire) {    
-            submit.classList.add("hidden");
+        if (dateNow > formExpire) {
+            const submitBtn = document.getElementById('submitBtn');
+            if(submitBtn){
+                submitBut.classList.add("hidden");
+            }
         }
 
         // input fields for guest names

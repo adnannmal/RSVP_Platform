@@ -51,11 +51,11 @@
             const dateExpire = new Date(data.dataExpire);
 
             if (dateNow > dateExpire) {
-                document.body.innerHTML = `
-                    <div class="text-center mt-20 text-red-700 font-bold text-xl">❌ This ticket has expired.
-                    </div>`;
+                document.body.innerHTML = `<p class="text-red-600 text-center font-bold text-xl mt-10">❌ This ticket has expired.</p>`;
                     
                 throw new Error("Ticket expired");
+
+                return;
             }
             
             console.log("Valid ticket");

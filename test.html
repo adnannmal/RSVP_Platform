@@ -23,8 +23,8 @@
 
         <!--flag pictures-->
 
-        <img src="pakistan_flag.png" alt="rightFlag" class="absolute top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
-        <img src="pakistan_flag.png" alt="leftFlag" class="absolute top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
+        <img id="rflag" src="pakistan_flag.png" alt="rightFlag" class="absolute top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
+        <img id="lflag" src="pakistan_flag.png" alt="leftFlag" class="absolute top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
 
         <!--RSVP Form-->
 
@@ -145,6 +145,8 @@
         const guest1lname = document.getElementById("guest1lname");
         const guest2fname = document.getElementById("guest2fname");
         const guest2lname = document.getElementById("guest2lname");
+        const rflag = document.getElementById('rflag');
+        const lflag = document.getElementById('lflag');
 
         if (selected === "guest") { // if yes show guest fields and make guest 1 required
             guestField.classList.remove("hidden");
@@ -152,6 +154,8 @@
             guest1lname.required = true;
             guest2fname.required = false;
             guest2lname.required = false;
+            rflag.classList.add("hidden");
+            lflag.classList.add("hidden");
         } 
         else { // else all entry is hidden and requirement is removed
             guestField.classList.add("hidden");
@@ -159,6 +163,8 @@
             guest1lname.required = false;
             guest2fname.required = false;
             guest2lname.required = false;
+            rflag.classList.remove("hidden");
+            lflag.classList.remove("hidden");
         }
         
         });

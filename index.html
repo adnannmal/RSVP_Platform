@@ -154,31 +154,31 @@
         document.getElementById("rsvpForm").addEventListener("submit", function (e) {
             e.preventDefault(); // prevents page to reload
 
-        const form = e.target;
+            const form = e.target;
 
         // validate manually to prevent "not focusable" error
 
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
 
-        //const dataExpire = new Date("2025-07-01T00:00:00Z").toISOString(); // form expires July 1st
-        const dataExpire = new Date("2025-06-26T09:20:00Z").toISOString(); 
+            //const dataExpire = new Date("2025-07-01T00:00:00Z").toISOString(); // form expires July 1st
+            const dataExpire = new Date("2025-06-26T09:20:00Z").toISOString(); 
 
         // collect data from form to objects
 
-        const data = {
-            fname: form.fname.value,
-            lname: form.lname.value,
-            email: form.email.value,
-            hofstraId: form.hofstraId.value,
-            status: form.status.value,
-            guest1fname: form.guest1fname.value || "",
-            guest1lname: form.guest1lname.value || "",
-            guest2fname: form.guest2fname.value || "",
-            guest2lname: form.guest2lname.value || "",
-            dateExpire: dateExpire,
+            const data = {
+                fname: form.fname.value,
+                lname: form.lname.value,
+                email: form.email.value,
+                hofstraId: form.hofstraId.value,
+                status: form.status.value,
+                guest1fname: form.guest1fname.value || "",
+                guest1lname: form.guest1lname.value || "",
+                guest2fname: form.guest2fname.value || "",
+                guest2lname: form.guest2lname.value || "",
+                dateExpire: dateExpire,
         };
 
         console.log("Form submitted:", data); // confirm data is being correctly stored

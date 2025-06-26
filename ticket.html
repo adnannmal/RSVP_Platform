@@ -44,9 +44,24 @@
             data = JSON.parse(decodeURIComponent(query.get("data"))); // decode data string back to a object
 
             console.log("Decoded data:", data);
+
+            // check date
+
+            const dateNow = new Date();
+            const dateExpire = new Date(data.dataExpire);
+
+            if (dateNow > dateExpire) {
+                document.body.innerHTML = `
+                    <div class="text-center mt-20 text-red-700 font-bold text-xl">❌ This ticket has expired.
+                    </div>`;
+                    
+                throw new Error("Ticket expired");
+            }
+            
+            console.log("Valid ticket");
         } 
         catch (err) { // error catch
-            document.body.innerHTML = `<p class="text-red-700 text-center font-bold">Invalid or missing QR data.</p>`;
+            document.body.innerHTML = `<p class="text-red-700 text-center font-bold">Expired or missing QR data.</p>`;
             throw err;
         }
 

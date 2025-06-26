@@ -2,7 +2,7 @@
 - add time constraint to form (if possible)
 - start backend for excel sheet to aprrove / request and email
 - directly email qr code instead of displaying it on success page to increase security
-- Send calender invites (.cs files) with cnfirmation email
+- Send calender invites (.cs files) with confirmation email
 - Add autosave feature (in case they refresh mid-entry)
 - Provide real-time validation (e.g. "Invalid ID format" as you type)
 - Allow admin approval before sending tickets (status-based). [BACKEND]

@@ -124,6 +124,8 @@
         document.getElementById("statusSelect").addEventListener("change", function () {
         const selected = this.value; // get value from dropdown entry
         const guestField = document.getElementById("guestField"); // script reference to submitted form
+        //const dataExpire = new Date("2025-07-01T00:00:00Z").toISOString(); // form expires July 1st
+        const dataExpire = new Date("2025-06-26T09:14:00Z").toISOString(); // form expires July 1st
 
         // input fields for guest names
 
@@ -175,6 +177,7 @@
             guest1lname: form.guest1lname.value || "",
             guest2fname: form.guest2fname.value || "",
             guest2lname: form.guest2lname.value || "",
+            dateExpire: dateExpire
         };
 
         console.log("Form submitted:", data); // confirm data is being correctly stored

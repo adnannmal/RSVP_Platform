@@ -3,10 +3,12 @@
 - start backend for excel sheet to aprrove / request and email
 - directly email qr code instead of displaying it on success page to increase security
 - Send calender invites (.cs files) with cnfirmation email
-- Include a "Contact Us" button and page for changes
 - Add autosave feature (in case they refresh mid-entry)
 - Provide real-time validation (e.g. "Invalid ID format" as you type)
 - Allow admin approval before sending tickets (status-based). [BACKEND]
 - Make QR links expire after the event
 - Use a secure backend to generate unique QR code tokens, not raw data.
 - Set a date/time after which the submit button is disabled or hidden.
+
+Done:
+- Include a "Contact Us" button and page for changes

@@ -188,6 +188,9 @@
 
             // collect data from form to objects
 
+        const saveForm = document.getElementById("rsvpForm");
+
+        saveForm.addEventListener("input", () =>{
             const data = {
                 fname: form.fname.value,
                 lname: form.lname.value,
@@ -200,6 +203,8 @@
                 guest2lname: form.guest2lname.value || "",
                 qrExpire: qrExpire,
             };
+            localStorage.setItem("autosave", JSON.stringify(formData));
+        });
 
         console.log("Form submitted:", data); // confirm data is being correctly stored
 
@@ -225,6 +230,27 @@
     function closePage() {
         document.getElementById("contactPage").classList.add("hidden");
     }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        const saved = localStorage.getItem("autosave");
+        if (saved) {
+            const data = JSON.parse(saved);
+            form.fname.value = data.fname || "";
+            form.lname.value = data.lname || "";
+            form.email.value = data.email || "";
+            form.hofstraId.value = data.hofstraId || "";
+            form.status.value = data.status || "";
+
+            if (data.status === "guest") {
+                document.getElementById("guestField").classList.remove("hidden");
+            }
+
+            form.guest1fname.value = data.guest1fname || "";
+            form.guest1lname.value = data.guest1lname || "";
+            form.guest2fname.value = data.guest2fname || "";
+            form.guest2lname.value = data.guest2lname || "";
+        }
+    });
 
     </script>
 </body>

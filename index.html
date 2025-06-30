@@ -7,21 +7,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
     <title>PSA RSVP Form</title> <!--Title shown in browser tab-->
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
+    <!--Fade in animation-->
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
 </head>
+
+<!--flag pictures-->
+
+<img src="Images/pakistan_flag.png" alt="rightFlag" class="fixed top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
+<img src="Images/pakistan_flag.png" alt="leftFlag" class="fixed top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
 
 <!--full screen layout with green background and centered content--> 
 
 <body class="bg-gradient-to-br from-green-100 via-white to-green-200 min-h-screen flex items-center justify-center p-4" 
-    style="background: radial-gradient(circle at top left, #34d399, transparent 70%), radial-gradient(circle at bottom right, #34d399, transparent 70%);">
+    style="background: radial-gradient(circle at top left, #34d399, transparent 40%), radial-gradient(circle at bottom right, #34d399, transparent 40%), radial-gradient(circle at top right, #34d399, transparent 40%),  radial-gradient(circle at bottom left, #34d399, transparent 40%)">
     
-    <div class="bg-white shadow-xl rounded-lg p-4 w-full max-w-md"> <!--white container with shadow and padding-->
+    <div class="relative z-10 bg-white shadow-xl rounded-lg p-4 w-full max-w-md animate-fade-in"> <!--white container with shadow and padding-->
         <h1 class="text-3xl font-extrabold mb-6 text-center text-green-700">PSA Event RSVP <!--main heading-->
         </h1>
-
-        <!--flag pictures-->
-
-        <img src="Images/pakistan_flag.png" alt="rightFlag" class="fixed top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
-        <img src="Images/pakistan_flag.png" alt="leftFlag" class="fixed top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
 
         <!--RSVP Form-->
 
@@ -95,7 +106,7 @@
             
     <!--Contact Info-->
 
-    <div id="contactPage" class="fixed inset-0 bg-black bg-opacity-50 flex items-center hidden justify-center">
+    <div id="contactPage" class="fixed inset-0 bg-black bg-opacity-50 flex items-center hidden justify-center z-10">
         <div class="bg-white p-6 rounded shadow-lg w-80 text-center relative">
             <button onclick="closePage()" class="absolute top-2 right-3 text-gray-600 text-xl">&times;</button> <!--X Button-->
             <h2 class="text-lg font-semibold mb-2">Contact Us</h2>

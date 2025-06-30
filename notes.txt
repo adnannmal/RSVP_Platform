@@ -1,7 +1,6 @@
 To do:
 - Fix Flags to stay on top of form
 - Improve all pages appearence (make it look nicer, maybe some animations, etc...)
-- Add autosave feature (in case they refresh mid-entry)
 - Remove locally stored data and qr code when backend starts
 
 BACKEND To do:

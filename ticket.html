@@ -10,13 +10,23 @@
   <title>Ticket</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
+  <style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+  </style>
 </head>
 
 <body class="bg-blue-300 min-h-screen flex flex-col items-center justify-center">
 
     <!--Password Entry-->
 
-    <div id="authUser" class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md">
+    <div id="authUser" class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md animate-fade-in">
         <h1 class="text-3xl font-bold mb-6 text-center text-black-700">Enter PIN to View Ticket <!--main heading-->
         </h1>
 

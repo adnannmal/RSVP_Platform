@@ -11,6 +11,12 @@
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
 </head>
 
+<!--flag pictures-->
+
+<img id="rflag" src="Images/pakistan_flag.png" alt="rightFlag" class="absolute top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
+<img id="lflag" src="Images/pakistan_flag.png" alt="leftFlag" class="absolute top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
+
+
 <!--full screen layout with green background and centered content--> 
 
 <body class="bg-gradient-to-br from-green-100 via-white to-green-200 min-h-screen flex items-center justify-center p-4" 
@@ -20,10 +26,7 @@
         <h1 class="text-3xl font-extrabold mb-6 text-center text-green-700">PSA Event RSVP <!--main heading-->
         </h1>
 
-        <!--flag pictures-->
-
-        <img id="rflag" src="Images/pakistan_flag.png" alt="rightFlag" class="absolute top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
-        <img id="lflag" src="Images/pakistan_flag.png" alt="leftFlag" class="absolute top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
+        <div id="countdown" class="text-center text-lg font-semibold text-green-700 my-4"></div>
 
         <!--RSVP Form-->
 
@@ -118,6 +121,8 @@
         </button>
 
     </div>
+
+    
         
     </div>
 
@@ -225,7 +230,7 @@
     function closePage() {
         document.getElementById("contactPage").classList.add("hidden");
     }
-
+   
     </script>
 </body>
 </html>

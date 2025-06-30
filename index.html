@@ -34,6 +34,10 @@
         <h1 class="text-3xl font-extrabold mb-6 text-center text-green-700">PSA Event RSVP <!--main heading-->
         </h1>
 
+        <!--Countdown Timer for Form Submission-->
+        <div id="countdown" class="text-center text-md font-semibold text-black-700 my-4">Countdown
+        </div>
+
         <!--RSVP Form-->
 
         <form id="rsvpForm" class="space-y-4">
@@ -178,7 +182,7 @@
 
             const form = e.target;
 
-        // validate manually to prevent "not focusable" error
+            // validate manually to prevent "not focusable" error
 
             if (!form.checkValidity()) {
                 form.reportValidity();
@@ -187,7 +191,7 @@
 
             // QR code expiration after event
 
-            const qrExpire = new Date("2025-07-01T00:00:00Z").toISOString();
+            const qrExpire = new Date("2025-07-01T00:00:00Z").toISOString(); // date qr code expires
 
             // collect data from form to objects
 
@@ -213,21 +217,39 @@
         // wait 0.5 second before redirection to success page
 
         setTimeout(() => {
-            window.location.href = "success.html";
+            window.location.href = "success.html"; // redirect to success.html page
         }, 500);
     });
 
     // opens contact page
 
-    function openPage() {
+    function openPage() { // open contact page
         document.getElementById("contactPage").classList.remove("hidden");
     }
 
     // closes contact page
 
-    function closePage() {
+    function closePage() { // close contact page
         document.getElementById("contactPage").classList.add("hidden");
     }
+
+    // countdown timer
+
+    const event = new Date("2025-07-01T01:00:00Z").getDate; // set event time
+
+    const countdown = document.getElementById("countdown");
+
+    const countdownTimer = setInterval(() =>{ // run every second to update timer
+        const event = new Date("2025-07-01T01:00:00Z").getDate; // get time now
+        const now = new Date().getTime(); // current time
+        const timeLeft = event - now; // time left
+
+        if (timeLeft <= 0) { // if countdown = 0 stop timer
+            clearInterval(countdown);
+        }
+    })
+
+
 
     </script>
 </body>

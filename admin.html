@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
 </head>
 
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-gray-400 min-h-screen p-6">
     <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
     
     <h1 class="text-3xl font-bold text-black mb-4 text-center">RSVP Submissions</h1>
@@ -18,13 +18,13 @@
 
     <div class="overflow-x-auto">
       <table class="min-w-full table-auto border">
-        <thead class="bg-green-100">
+        <thead>
           <tr>
-            <th class="border px-4 py-2">Name</th>
-            <th class="border px-4 py-2">Email</th>
-            <th class="border px-4 py-2">ID</th>
-            <th class="border px-4 py-2">Guests</th>
-            <th class="border px-4 py-2">Time</th>
+            <th class="border border-black px-4 py-2 bg-blue-300">Name</th>
+            <th class="border border-black px-4 py-2 bg-blue-300">Email</th>
+            <th class="border border-black px-4 py-2 bg-blue-300">ID</th>
+            <th class="border border-black px-4 py-2 bg-blue-300">Guests</th>
+            <th class="border border-black px-4 py-2 bg-blue-300">Time</th>
           </tr>
         </thead>
         <tbody id="tableData" class="text-sm"></tbody>
@@ -55,13 +55,14 @@
 
         const row = `
             <tr>
-            <td class="border px-4 py-2">${data.fname} ${data.lname}</td>
-            <td class="border px-4 py-2">${data.email}</td>
-            <td class="border px-4 py-2">${data.hofstraId}</td>
-            <td class="border px-4 py-2">
+            <td class="border border-black px-4 py-2">${data.fname} ${data.lname}</td>
+            <td class="border border-black px-4 py-2">${data.email}</td>
+            <td class="border border-black px-4 py-2">${data.hofstraId}</td>
+            <td class="border border-black px-4 py-2">
                 ${data.guest1fname ? data.guest1fname + ' ' + data.guest1lname : ""}
                 ${data.guest2fname ? '<br>' + data.guest2fname + ' ' + data.guest2lname : ""}
             </td>
+            <td class="border border-black px-4 py-2">${data.time}</td>
             </tr>`;
         tableBody.innerHTML += row;
     }

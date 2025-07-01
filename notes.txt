@@ -1,7 +1,7 @@
 To do:
-- Improve all pages appearence (make it look nicer, maybe some animations, etc...)
-- Remove locally stored data and qr code when backend starts
 - Locally store time of submission to add to logs (admin table)
+- Fix table to keep logging submissions and not overwrite
+- Remove locally stored data and qr code when backend starts
 
 BACKEND To do:
 - Send calender invites (.cs files) with confirmation email

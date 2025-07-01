@@ -8,6 +8,7 @@
   <title>Thank You</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script> <!--confetti-->
   <style>
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -27,7 +28,7 @@
   <div class="text-center p-3 bg-white rounded-lg shadow-lg animate-fade-in">
     <h1 class="text-3xl font-bold text-green-700 mb-2">🎉 Thank You!</h1>
     <p class="text-gray-700">Your RSVP has been submitted successfully.</p>
-    <p class="text-gray-700">A email confirmation will  be sent shortly.</p>
+    <p class="text-gray-700">A email confirmation will  be sent shortly containing your ticket.</p>
   </div>
 
   <!--QR Code-->
@@ -44,6 +45,12 @@
   
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+      confetti({ // confetti function
+        particleCount: 3000,
+        spread: 2000,
+        origin: { y: 0.5 }
+      });
+
       const qrRaw = localStorage.getItem("qrData"); // get data from qrCode
       const qrData = JSON.parse(qrRaw); // parse and turn it back into object to allow for proper encoding
 

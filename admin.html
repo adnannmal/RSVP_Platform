@@ -40,71 +40,69 @@
 
     </div>
 
-<script>
-    function loadRSVPs() {
-        const tableBody = document.getElementById("tableData");
-        tableBody.innerHTML = "";
+    <script>
+        function loadRSVPs() {
+            const tableBody = document.getElementById("tableData");
+            tableBody.innerHTML = "";
 
-        // Retrieve RSVP data
+            // Retrieve RSVP data
 
-        let rawData = localStorage.getItem("qrData"); // get data from local storage
+            let rawData = localStorage.getItem("qrData"); // get data from local storage
 
-        if (!rawData) { // if no data present, return
-            return;
-            console.log("No data from qr code");
+            if (!rawData) { // if no data present, return
+                return;
+                console.log("No data from qr code");
+            }
+
+            let data = JSON.parse(rawData); // parse raw data to object
+
+            // Add row to table for each entry
+
+            const row = `
+                <tr>
+                <td class="border border-black px-4 py-2">${data.fname} ${data.lname}</td>
+                <td class="border border-black px-4 py-2">${data.email}</td>
+                <td class="border border-black px-4 py-2">${data.hofstraId}</td>
+                <td class="border border-black px-4 py-2">
+                    ${data.guest1fname ? data.guest1fname + ' ' + data.guest1lname : ""}
+                    ${data.guest2fname ? '<br>' + data.guest2fname + ' ' + data.guest2lname : ""}
+                </td>
+                <td class="border border-black px-4 py-2">${data.submitTime}</td>
+                </tr>`;
+            tableBody.innerHTML += row; 
         }
 
-        let data = JSON.parse(rawData); // parse raw data to object
+        // export table as .csv
 
-        // Add row to table for each entry
+        function exportCSV() {
+            let csv = "Name,Email,ID,Guest 1,Guest 2,Time\n";
+            let data = JSON.parse(localStorage.getItem("qrData")); // parse raw data to object
 
-        const row = `
-            <tr>
-            <td class="border border-black px-4 py-2">${data.fname} ${data.lname}</td>
-            <td class="border border-black px-4 py-2">${data.email}</td>
-            <td class="border border-black px-4 py-2">${data.hofstraId}</td>
-            <td class="border border-black px-4 py-2">
-                ${data.guest1fname ? data.guest1fname + ' ' + data.guest1lname : ""}
-                ${data.guest2fname ? '<br>' + data.guest2fname + ' ' + data.guest2lname : ""}
-            </td>
-            <td class="border border-black px-4 py-2">${data.submitTime}</td>
-            </tr>`;
-        tableBody.innerHTML += row;
-
+            if (!data) { // if no data present, return
+                return;
+                console.log("No data from qr code");
+            }
         
-    }
+            csv += `${data.fname} ${data.lname},${data.email},${data.hofstraId},${data.guest1fname} ${data.guest1lname},${data.guest2fname} ${data.guest2lname}, ${data.submitTime}\n`;
 
-    // export table as .csv
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
 
-    function exportCSV() {
-        let csv = "Name,Email,ID,Guest 1,Guest 2,Time\n";
-        let data = JSON.parse(localStorage.getItem("qrData")); // parse raw data to object
+            // time for when .csv file is exported
 
-        if (!data) { // if no data present, return
-            return;
-            console.log("No data from qr code");
+            const now = new Date();
+            const date = now.toISOString().split("T")[0]; 
+
+            // create/download .csv file
+
+            a.href = url;
+            a.download = `rsvp_data-${date}.csv`;
+            a.click();
         }
-        
-        csv += `${data.fname} ${data.lname},${data.email},${data.hofstraId},${data.guest1fname} ${data.guest1lname},${data.guest2fname} ${data.guest2lname}, ${data.submitTime}\n`;
 
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-
-        // time for when .csv file is exported
-
-        const now = new Date();
-        const date = now.toISOString().split("T")[0]; 
-
-        // create/download .csv file
-
-        a.href = url;
-        a.download = `rsvp_data-${date}.csv`;
-        a.click();
-    }
-
-    window.onload = loadRSVPs;  // Load data on page load
-  </script>
+        window.onload = loadRSVPs;  // Load data on page load
+    </script>
 
 </body>
 </html>

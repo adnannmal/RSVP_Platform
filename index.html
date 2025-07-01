@@ -139,7 +139,7 @@
         // form expiration
 
         const dateNow = new Date();
-        const formExpire = new Date("2025-07-01T01:00:00Z");
+        const formExpire = new Date("2025-08-01T01:00:00Z");
 
         if (dateNow > formExpire) {
             const submitBtn = document.getElementById('submitBtn')
@@ -192,7 +192,7 @@
 
             // QR code expiration after event
 
-            const qrExpire = new Date("2025-07-01T00:00:00Z").toISOString(); // date qr code expires
+            const qrExpire = new Date("2025-08-01T00:00:00Z").toISOString(); // date qr code expires
 
             // collect data from form to objects
 
@@ -236,7 +236,7 @@
 
     // countdown timer
 
-    const event = new Date("2025-07-01T00:00:00Z").getTime(); // set event time
+    const event = new Date("2025-08-01T00:00:00Z").getTime(); // set event time
 
     const countdown = document.getElementById("countdown");
 

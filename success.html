@@ -8,7 +8,7 @@
   <title>Thank You</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script> <!--confetti-->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script> <!--confetti-->
   <style>
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -45,12 +45,11 @@
   
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      confetti({ // confetti function
-        particleCount: 3000,
-        spread: 2000,
-        origin: { y: 0.9 }
+      confetti({
+        particleCount: 4500,
+        spread: 1000,
+        origin: { y: -1.1 },
       });
-
       const qrRaw = localStorage.getItem("qrData"); // get data from qrCode
       const qrData = JSON.parse(qrRaw); // parse and turn it back into object to allow for proper encoding
 

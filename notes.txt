@@ -18,4 +18,4 @@ Done:
 - Include a "Contact Us" button and page for changes
 - Make QR links expire after the event
 - add time constraint to form (if possible) aka remove submit button
-
+- add countdown to inform users time left on form

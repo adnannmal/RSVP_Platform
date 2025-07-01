@@ -47,9 +47,14 @@
 
         // Retrieve RSVP data
 
-        let rawData = localStorage.getItem("qrData");
-        if (!rawData) return;
-        let data = JSON.parse(rawData);
+        let rawData = localStorage.getItem("qrData"); // get data from local storage
+
+        if (!rawData) { // if no data present, return
+            return;
+            console.log("No data from qr code");
+        }
+
+        let data = JSON.parse(rawData); // parse raw data to object
 
         // Add row to table for each entry
 
@@ -65,26 +70,33 @@
             <td class="border border-black px-4 py-2">${data.submitTime}</td>
             </tr>`;
         tableBody.innerHTML += row;
+
+        
     }
 
     // export table as .csv
 
     function exportCSV() {
-        let csv = "Name,Email,ID,Guest 1,Guest 2\n";
-        let data = JSON.parse(localStorage.getItem("qrData"));
+        let csv = "Name,Email,ID,Guest 1,Guest 2,Time\n";
+        let data = JSON.parse(localStorage.getItem("qrData")); // parse raw data to object
 
-        if (!data) {
+        if (!data) { // if no data present, return
             return;
+            console.log("No data from qr code");
         }
         
-        csv += `${data.fname} ${data.lname},${data.email},${data.hofstraId},${data.guest1fname} ${data.guest1lname},${data.guest2fname} ${data.guest2lname}\n`;
+        csv += `${data.fname} ${data.lname},${data.email},${data.hofstraId},${data.guest1fname} ${data.guest1lname},${data.guest2fname} ${data.guest2lname}, ${data.submitTime}\n`;
 
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
 
+        // time for when .csv file is exported
+
         const now = new Date();
         const date = now.toISOString().split("T")[0]; 
+
+        // create/download .csv file
 
         a.href = url;
         a.download = `rsvp_data-${date}.csv`;

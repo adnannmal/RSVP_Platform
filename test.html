@@ -22,6 +22,11 @@
     </style>
 </head>
 
+<!--flag pictures-->
+
+<img src="Images/pakistan_flag.png" alt="rightFlag" class="fixed top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
+<img src="Images/pakistan_flag.png" alt="leftFlag" class="fixed top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
+
 <!--full screen layout with green background and centered content--> 
 
 <body class="bg-gradient-to-br from-green-100 via-white to-green-200 min-h-screen flex items-center justify-center p-4" 
@@ -30,11 +35,6 @@
     <div class="relative z-10 bg-white shadow-xl rounded-lg p-4 w-full max-w-md animate-fade-in"> <!--white container with shadow and padding-->
         <h1 class="text-3xl font-extrabold mb-6 text-center text-green-700">PSA Event RSVP <!--main heading-->
         </h1>
-
-        <!--flag pictures-->
-
-        <img src="Images/pakistan_flag.png" alt="rightFlag" class="fixed top-5 right-11 w-32 transform rotate-12 opacity-90 pointer-events-none" />
-        <img src="Images/pakistan_flag.png" alt="leftFlag" class="fixed top-5 left-11 w-32 transform -rotate-12 opacity-90 pointer-events-none" />
 
         <!--Countdown Timer for Form Submission-->
 
@@ -82,7 +82,7 @@
                 <label class="block mt-3"> <!--Input for Guest 1 first name-->
                     <span class="text-gray-700">Guest 1:
                     </span>
-                <input type="text" id="guest1fname" name="guest1lname" placeholder="First Name" class="w-full border p-2  mt-1 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition-transform duration-300 focus:scale-105" />
+                <input type="text" id="guest1fname" name="guest1fname" placeholder="First Name" class="w-full border p-2  mt-1 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition-transform duration-300 focus:scale-105" />
 
                 <label class="block "> <!--Input for Guest 1 last name-->
                     <span class="text-gray-700">
@@ -134,8 +134,7 @@
         <img src="Images/question_mark.png" alt="question" class="w-12 h-12 inline-block" />
         </button>
     </div>
-        
-    </div>
+
 
     <script>
         // form expiration
@@ -246,10 +245,8 @@
         const now = new Date().getTime(); // current time
         const timeLeft = event - now; // time left
 
-        if (timeLeft <= 0) { // if countdown = 0 stop timer
-            clearInterval(countdownTimer);
-            countdown.innerHTML = "Event has started!";
-            countdown.className = "text-center text-md font-semibold text-black-700 my-4"
+        if (timeLeft <= 0) {
+            countdown.style.display = "none"; // hide countdown
         }
 
         // define days, hours, minutes, seconds

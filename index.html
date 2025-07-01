@@ -193,7 +193,17 @@
 
             const qrExpire = new Date("2025-08-01T00:00:00Z").toISOString(); // date qr code expires
 
-            const submitTime = new Date();
+            // time submitted
+
+            const submitTime = new Date(isoDate).toLocaleString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit"
+            });
+
+            console.log(submitTime); // ex: "July 1, 2025, 3:26 PM"
 
             // collect data from form to objects
 

@@ -182,13 +182,6 @@
 
             const form = e.target;
 
-            // keeps rsvps in an array
-
-            let storedArray = JSON.parse(localStorage.getItem("qrDataList")) || [];
-            storedArray.push(data);
-
-            localStorage.setItem("qrDataList", JSON.stringify(storedArray));
-
             // validate manually to prevent "not focusable" error
 
             if (!form.checkValidity()) {
@@ -233,6 +226,13 @@
         // store form data locally
 
         localStorage.setItem("qrData", JSON.stringify(data)); // store data locally into qrCode
+
+        // keeps rsvps in an array
+
+        let storedArray = JSON.parse(localStorage.getItem("qrDataList")) || [];
+        storedArray.push(data);
+
+        localStorage.setItem("qrDataList", JSON.stringify(storedArray));
 
         // wait 0.5 second before redirection to success page
 

@@ -47,29 +47,33 @@
 
             // Retrieve RSVP data
 
-            let rawData = localStorage.getItem("qrData"); // get data from local storage
+            //let rawData = localStorage.getItem("qrData"); // get data from local storage
+
+            const stored = JSON.parse(localStorage.getItem("qrDataList")) || [];
 
             if (!rawData) { // if no data present, return
                 return;
                 console.log("No data from qr code");
             }
 
-            let data = JSON.parse(rawData); // parse raw data to object
+            //let data = JSON.parse(rawData); // parse raw data to object
 
             // Add row to table for each entry
 
-            const row = `
-                <tr>
-                <td class="border border-black px-4 py-2">${data.fname} ${data.lname}</td>
-                <td class="border border-black px-4 py-2">${data.email}</td>
-                <td class="border border-black px-4 py-2">${data.hofstraId}</td>
-                <td class="border border-black px-4 py-2">
-                    ${data.guest1fname ? data.guest1fname + ' ' + data.guest1lname : ""}
-                    ${data.guest2fname ? '<br>' + data.guest2fname + ' ' + data.guest2lname : ""}
-                </td>
-                <td class="border border-black px-4 py-2">${data.submitTime}</td>
-                </tr>`;
-            tableBody.innerHTML += row; 
+            stored.forEach(data => {
+                const row = `
+                    <tr>
+                    <td class="border border-black px-4 py-2">${data.fname} ${data.lname}</td>
+                    <td class="border border-black px-4 py-2">${data.email}</td>
+                    <td class="border border-black px-4 py-2">${data.hofstraId}</td>
+                    <td class="border border-black px-4 py-2">
+                        ${data.guest1fname ? data.guest1fname + ' ' + data.guest1lname : ""}
+                        ${data.guest2fname ? '<br>' + data.guest2fname + ' ' + data.guest2lname : ""}
+                    </td>
+                    <td class="border border-black px-4 py-2">${data.submitTime}</td>
+                    </tr>`;
+                tableBody.innerHTML += row; 
+            });
         }
 
         // export table as .csv

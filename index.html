@@ -182,6 +182,13 @@
 
             const form = e.target;
 
+            // keeps rsvps in an array
+
+            let storedArray = JSON.parse(localStorage.getItem("qrDataList")) || [];
+            storedArray.push(data);
+
+            localStorage.setItem("qrDataList", JSON.stringify(storedArray));
+
             // validate manually to prevent "not focusable" error
 
             if (!form.checkValidity()) {

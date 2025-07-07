@@ -1,5 +1,4 @@
 To do:
-- Fix table to keep logging submissions and not overwrite
 - Remove locally stored data and qr code when backend starts
 
 BACKEND To do:
@@ -19,3 +18,4 @@ Done:
 - add time constraint to form (if possible) aka remove submit button
 - add countdown to inform users time left on form
 - Locally store time of submission to add to logs (admin table)
+- Fix table to keep logging submissions and not overwrite

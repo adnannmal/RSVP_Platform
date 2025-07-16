@@ -23,12 +23,14 @@
 <body class="bg-blue-400 flex items-center justify-center min-h-screen p-6">
 
     <div class="bg-white rounded-lg shadow-xl p-8 max-w-lg w-full text-center animate-fade-in">
-        <h1 class="text-3xl font-bold text-black mb-4">⏳ Form Will Open In ⏳</h1>
+        <p id="title" class="text-3xl font-bold text-black mb-4"></p>
         <p id="timer" class="text-lg text-gray-700 font-semibold hidden">Loading...</p>
         <p id="countdown" class="text-xl text-gray-700"></p>
     </div>
 
     <script>
+        title.innerText = "⏳ Form Will Open In ⏳"
+
         // set open time
 
         const open = new Date();
@@ -52,6 +54,7 @@
             if (timeLeft <= 0) {
                 clearInterval(interval);
                 countdown.innerText = "Redirecting...";
+                title.innerText = "Form Opened"
                 localStorage.setItem("formUnlocked", "true"); // save state for post timer finish
                 window.location.href = "home.html";  // redirect when time is reached
                 return;

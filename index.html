@@ -52,6 +52,11 @@
                 return;
             }
 
+            if (timeLeft == 0) {
+                window.location.href = "home.html";  // redirect when time is reached
+                return;
+            }
+
             // define days, hours, minutes, seconds
 
             const days = Math.floor(timeLeft / (1000 * 60 *60 * 24));

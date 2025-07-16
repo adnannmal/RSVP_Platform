@@ -34,11 +34,11 @@
         const open = new Date();
         const timer = document.getElementById("timer");
         const countdown = document.getElementById("countdown");
-
+        localStorage.setItem("formUnlocked", "false");
 
         open.setFullYear(2025, 6, 16); // 0-indexed (0 = Jan)
         open.setHours(14); // 24 hr 
-        open.setMinutes(34); // 60 min
+        open.setMinutes(44); // 60 min
         open.setSeconds(0);
 
         if (localStorage.getItem("formUnlocked") === "true") {

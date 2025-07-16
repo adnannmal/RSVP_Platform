@@ -18,6 +18,35 @@
             animation: fadeIn 0.8s ease-out forwards;
         }
     </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-app.firebaseapp.com",
+            projectId: "your-app-id",
+            storageBucket: "your-app.appspot.com",
+            messagingSenderId: "123456",
+            appId: "your-app-id"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Example save function
+
+        window.saveRSVP = async function (data) {
+            try {
+                await addDoc(collection(db, "rsvps"), data);
+                alert("RSVP saved to Firestore!");
+            } 
+            catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        };
+    </script>
 </head>
 
 <!--flag pictures-->
@@ -224,7 +253,8 @@
         console.log("Form submitted:", data); // confirm data is being correctly stored
 
         // store form data locally
-
+        
+        saveRSVP(data);
         localStorage.setItem("qrData", JSON.stringify(data)); // store data locally into qrCode
 
         // keeps rsvps in an array

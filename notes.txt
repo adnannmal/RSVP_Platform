@@ -7,6 +7,7 @@ BACKEND To do:
 - Use a secure backend to generate unique QR code tokens, not raw data.
 - Send calender invites (.cs files) with confirmation email
 - directly email qr code instead of displaying it on success page to increase security
+- check if email, and id have already been used  to prevent multiple submissions at once
 
 Done:
 - Transition to new screen for successful submission

@@ -41,6 +41,10 @@
         open.setMinutes(34); // 60 min
         open.setSeconds(0);
 
+        if (localStorage.getItem("formUnlocked") === "true") {
+            window.location.href = "home.html";
+        }
+
         const interval = setInterval(() => {
             const now = new Date();
             const timeLeft = open - now;
@@ -48,11 +52,7 @@
             if (timeLeft <= 0) {
                 clearInterval(interval);
                 countdown.innerText = "Redirecting...";
-                window.location.href = "home.html";  // redirect when time is reached
-                return;
-            }
-
-            if (timeLeft == 0) {
+                localStorage.setItem("formUnlocked", "true"); // save state for post timer finish
                 window.location.href = "home.html";  // redirect when time is reached
                 return;
             }

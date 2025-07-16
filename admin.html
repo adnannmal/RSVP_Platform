@@ -83,8 +83,10 @@
         // clear all entries
 
         function clearEntries() {
-            localStorage.removeItem("qrDataList");
-            loadRSVPs(); // refresh table
+            if (confirm("Are you sure you want to delete all RSVP submissions? This cannot be undone.")) {
+                localStorage.removeItem("qrDataList");
+                loadRSVPs(); // refresh table
+            }
         }
 
         // export table as .csv

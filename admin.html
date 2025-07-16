@@ -83,7 +83,7 @@
         // clear all entries
 
         function clearEntries() {
-            if (confirm("Are you sure you want to delete all RSVP submissions? This cannot be undone.")) {
+            if (confirm("Are you sure you want to delete all RSVP submissions? This cannot be undone.")) { // accidental clear protetion
                 localStorage.removeItem("qrDataList");
                 loadRSVPs(); // refresh table
             }

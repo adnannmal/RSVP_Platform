@@ -20,3 +20,5 @@ Done:
 - add countdown to inform users time left on form
 - Locally store time of submission to add to logs (admin table)
 - Fix table to keep logging submissions and not overwrite
+- Add initial loading page for form to open
+- Add clear entries to admin page

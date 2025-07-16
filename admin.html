@@ -60,7 +60,7 @@
 
             // Add row to table for each entry
 
-            stored.forEach(data => {
+            stored.slice().reverse().forEach(data => {
                 const row = `
                     <tr>
                     <td class="border border-black px-4 py-2">${data.fname} ${data.lname}</td>

@@ -38,6 +38,10 @@
         </button>
     </div>
 
+    <button onclick="clearEntries()" class="bg-red-600 text-white px-4 py-2 ml-4 rounded hover:bg-red-700">
+        Clear All Entries
+    </button>
+
     </div>
 
     <script>
@@ -74,6 +78,13 @@
                     </tr>`;
                 tableBody.innerHTML += row; 
             });
+        }
+
+        // clear all entries
+
+        function clearEntries() {
+            localStorage.removeItem("qrDataList");
+            loadRSVPs(); // refresh table
         }
 
         // export table as .csv

@@ -311,5 +311,46 @@
     });
     
     </script>
+
+    <!-- Backend Link -->
+     
+    <script>
+        const API_URL = 'https://7f3b9714-6676-418e-9ac0-98794919442f-00-2mrs2fnc4u3au.picard.replit.dev/';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('rsvp-form');
+            if (!form) return;
+
+            form.addEventListener('submit', async e => {
+                e.preventDefault();
+
+                // build a plain object from your form fields
+                const data = Object.fromEntries(new FormData(form).entries());
+
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const payload = await res.json();
+
+                    if (res.ok && payload.success) {
+                        window.location.href = '/success.html';
+                    } 
+
+                    else {
+                        alert(payload.error || 'Submission failed');
+                    }
+
+                } 
+                catch (err) {
+                    console.error(err);
+                    alert('Network error. Please try again.');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

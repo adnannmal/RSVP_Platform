@@ -1,4 +1,5 @@
 To do:
+- Find out if you can see different submissions instead of locally stored
 - Remove locally stored data and qr code when backend starts
 
 BACKEND To do:

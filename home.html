@@ -292,6 +292,43 @@
 
     }, 1000); // update every second
 
+    document.getElementById("rsvpForm").addEventListener("submit", async function (e) {
+        e.preventDefault(); // prevent form from reloading page
+
+        const form = e.target;
+  
+        const data = {
+            fname: form.fname.value,
+            lname: form.lname.value,
+            email: form.email.value,
+            hofstraId: form.hofstraId.value,
+            status: form.status.value,
+            guest1fname: form.guest1fname?.value || "",
+            guest1lname: form.guest1lname?.value || "",
+            guest2fname: form.guest2fname?.value || "",
+            guest2lname: form.guest2lname?.value || "",
+        };
+
+        try {
+            const response = await fetch("https://7f3b9714-6676-418e-9ac0-98794919442f-00-2mrs2fnc4u3au.picard.replit.dev/index.html", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+            window.location.href = "success.html"; // Redirect on success
+            } 
+            else {
+            alert("Failed to submit RSVP. Try again.");
+            }
+        } 
+        catch (error) {
+            console.error("Error submitting form:", error);
+            alert("There was an error connecting to the server.");
+        }
+    });
+    
     </script>
 </body>
 </html>

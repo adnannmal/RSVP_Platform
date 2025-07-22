@@ -10,112 +10,152 @@
 </head>
 
 <body class="bg-gray-400 min-h-screen p-6">
-    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-    
-    <h1 class="text-3xl font-bold text-black mb-4 text-center">RSVP Submissions</h1>
+  <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+
+    <h1 class="text-3xl font-bold text-black mb-4 text-center">RSVP Submissions
+    </h1>
 
     <!--Table for RSVP data-->
 
     <div class="overflow-x-auto">
       <table class="min-w-full table-auto border">
-        <thead>
-          <tr>
-            <th class="border border-black px-4 py-2 bg-blue-300">Name</th>
-            <th class="border border-black px-4 py-2 bg-blue-300">Email</th>
-            <th class="border border-black px-4 py-2 bg-blue-300">ID</th>
-            <th class="border border-black px-4 py-2 bg-blue-300">Guests</th>
-            <th class="border border-black px-4 py-2 bg-blue-300">Time</th>
-          </tr>
-        </thead>
+            <thead>
+                <tr>
+                    <th scope="col" class="border px-4 py-2 bg-blue-300">Name</th>
+                    <th scope="col" class="border px-4 py-2 bg-blue-300">Email</th>
+                    <th scope="col" class="border px-4 py-2 bg-blue-300">ID</th>
+                    <th scope="col" class="border px-4 py-2 bg-blue-300">Guests</th>
+                    <th scope="col" class="border px-4 py-2 bg-blue-300">Time</th>
+                </tr>
+            </thead>
         <tbody id="tableData" class="text-sm"></tbody>
       </table>
     </div>
 
     <!--Export Button-->
 
-    <div class="text-center mt-6">
-        <button onclick="exportCSV()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Export CSV
+    <div class="flex justify-center mt-6 space-x-4">
+        <button id="exportBtn" type="button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Export CSV
         </button>
     </div>
+    
+    <!--Clear Entries Button-->
 
-    <button onclick="clearEntries()" class="bg-red-600 text-white px-4 py-2 ml-4 rounded hover:bg-red-700">
-        Clear All Entries
+    <button id="clearBtn" type="button" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Clear All Entries
     </button>
 
     </div>
 
-    <script>
-        function loadRSVPs() {
-            const tableBody = document.getElementById("tableData");
+    <script defer> (() => {
+        const STORAGE_KEY = "qrDataList"; // key under which the RSVP list is stored in localStorage
+
+        const tableBody   = document.getElementById("tableData");
+        const exportBtn   = document.getElementById("exportBtn");
+        const clearBtn    = document.getElementById("clearBtn");
+
+        function loadRSVPs() { // fetches the RSVP array from localStorage, parses it, and populates the table
             tableBody.innerHTML = "";
+            let list = [];
 
-            // Retrieve RSVP data
-
-            const stored = JSON.parse(localStorage.getItem("qrDataList")) || [];
-
-            if (!stored) { // if no data stored, return
-                return;
-                console.log("No data from qr code");
+            try { // handles empty-state and corrupt data.
+                list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } 
+            catch {
+                console.warn("Corrupt storage; resetting.");
+                localStorage.removeItem(STORAGE_KEY);
             }
 
-            // Add row to table for each entry
+            if (list.length === 0) { // no entries show a row indicating "No RSVPs yet
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                <td colspan="5"
+                    class="border px-4 py-2 text-center italic text-gray-500">
+                    No RSVPs yet.
+                </td>`;
 
-            stored.slice().reverse().forEach(data => {
-                const row = `
-                    <tr>
-                    <td class="border border-black px-4 py-2">${data.fname} ${data.lname}</td>
-                    <td class="border border-black px-4 py-2">${data.email}</td>
-                    <td class="border border-black px-4 py-2">${data.hofstraId}</td>
-                    <td class="border border-black px-4 py-2">
-                        ${data.guest1fname ? data.guest1fname + ' ' + data.guest1lname : ""}
-                        ${data.guest2fname ? '<br>' + data.guest2fname + ' ' + data.guest2lname : ""}
-                    </td>
-                    <td class="border border-black px-4 py-2">${data.submitTime}</td>
-                    </tr>`;
-                tableBody.innerHTML += row; 
+                tableBody.appendChild(tr);
+                return;
+            }
+
+            list.slice().reverse().forEach(entry => { // reverses list to show latest submissions first
+                const tr = document.createElement("tr");
+
+                // Build guest list
+                
+                const guests = [];
+                if (entry.guest1fname) guests.push(`${entry.guest1fname} ${entry.guest1lname}`);
+                if (entry.guest2fname) guests.push(`${entry.guest2fname} ${entry.guest2lname}`);
+
+                tr.innerHTML = `
+                <td class="border px-4 py-2">${entry.fname} ${entry.lname}</td>
+                <td class="border px-4 py-2">${entry.email}</td>
+                <td class="border px-4 py-2">${entry.hofstraId}</td>
+                <td class="border px-4 py-2">${guests.join("<br>")}</td>
+                <td class="border px-4 py-2">
+                    ${new Date(entry.submitTime).toLocaleString()}
+                </td>`;
+
+                tableBody.appendChild(tr);
             });
         }
 
-        // clear all entries
+        // Export the full list as CSV
 
-        function clearEntries() {
-            if (confirm("Are you sure you want to delete all RSVP submissions? This cannot be undone.")) { // accidental clear protetion
-                localStorage.removeItem("qrDataList");
-                loadRSVPs(); // refresh table
-            }
-        }
+        function exportCSV() { // converts the entire RSVP list into a CSV string
+            let list = [];
 
-        // export table as .csv
-
-        function exportCSV() {
-            let csv = "Name,Email,ID,Guest 1,Guest 2,Time\n";
-            let data = JSON.parse(localStorage.getItem("qrDataList")); // parse raw data to object 
-
-            if (!data) { // if no data present, return
+            try { 
+                list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } 
+            catch { 
+                alert("Cannot export: storage is corrupt.");
                 return;
-                console.log("No data from qr code");
             }
-        
-            csv += `${data.fname} ${data.lname},${data.email},${data.hofstraId},${data.guest1fname} ${data.guest1lname},${data.guest2fname} ${data.guest2lname}, ${data.submitTime}\n`;
+            
+            if (list.length === 0) { 
+                alert("No data to export.");
+                return;
+            }
 
-            const blob = new Blob([csv], { type: 'text/csv' });
+            const headers = ["Name","Email","ID","Guests","Time"];
+            const rows = list.map(e => {
+                const guests = [];
+                if (e.guest1fname) guests.push(`${e.guest1fname} ${e.guest1lname}`);
+                if (e.guest2fname) guests.push(`${e.guest2fname} ${e.guest2lname}`);
+                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), new Date(e.submitTime).toLocaleString()].map(f => `"${f.replace(/"/g,'""')}"`);
+            });
+
+            const csv = [headers.map(h=>`"${h}"`), ...rows].map(r=>r.join(",")).join("\r\n");
+
+            const blob = new Blob([csv], { type: "text/csv" }); // creates a Blob
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-
-            // time for when .csv file is exported
-
-            const now = new Date();
-            const date = now.toISOString().split("T")[0]; 
-
-            // create/download .csv file
+            const a = document.createElement("a");
 
             a.href = url;
-            a.download = `rsvp_data-${date}.csv`;
-            a.click();
+            a.download = `rsvp_data-${new Date().toISOString().split("T")[0]}.csv`;
+
+            document.body.appendChild(a);
+            a.click(); // trigger download
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url); // release memory
         }
 
-        window.onload = loadRSVPs;  // Load data on page load
-    </script>
+        function clearEntries() { // clear storage & refresh page
+            if (!confirm( // prompts the user for confirmation
+                "Are you sure you want to delete ALL RSVP entries? This cannot be undone."
+            )) return;
 
+            localStorage.removeItem(STORAGE_KEY); // removes all data from localStorage
+            loadRSVPs(); // refresh table
+        }
+
+        // wire up event listeners after DOM is ready
+
+        exportBtn.addEventListener("click", exportCSV);
+        clearBtn.addEventListener("click", clearEntries);
+        window.addEventListener("DOMContentLoaded", loadRSVPs);
+    })();
+    </script>
 </body>
 </html>

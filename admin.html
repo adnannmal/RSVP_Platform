@@ -119,7 +119,7 @@
 
             const headers = ["Name","Email","ID","Guests","Time"];
 
-            const rows = list.map(e => {
+            const rows = list.slice().reverse().map(e => {
                 const guests = [];
                 
                 if (e.guest1fname) {

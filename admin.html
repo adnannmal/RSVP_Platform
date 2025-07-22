@@ -118,11 +118,19 @@
             }
 
             const headers = ["Name","Email","ID","Guests","Time"];
+
             const rows = list.map(e => {
                 const guests = [];
-                if (e.guest1fname) guests.push(`${e.guest1fname} ${e.guest1lname}`);
-                if (e.guest2fname) guests.push(`${e.guest2fname} ${e.guest2lname}`);
-                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), new Date(e.submitTime).toLocaleString()].map(f => `"${f.replace(/"/g,'""')}"`);
+                
+                if (e.guest1fname) {
+                    guests.push(`${e.guest1fname} ${e.guest1lname}`);
+                }
+
+                if (e.guest2fname) {
+                    guests.push(`${e.guest2fname} ${e.guest2lname}`);
+                }
+
+                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), new Date(e.submitTime)].map(f => `"${f.replace(/"/g,'""')}"`);
             });
 
             const csv = [headers.map(h=>`"${h}"`), ...rows].map(r=>r.join(",")).join("\r\n");

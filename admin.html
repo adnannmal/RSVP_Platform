@@ -91,8 +91,7 @@
                 <td class="border px-4 py-2">${entry.email}</td>
                 <td class="border px-4 py-2">${entry.hofstraId}</td>
                 <td class="border px-4 py-2">${guests.join("<br>")}</td>
-                <td class="border px-4 py-2">
-                    ${new Date(entry.submitTime).toLocaleString()}
+                <td class="border px-4 py-2">${entry.submitTime }
                 </td>`;
 
                 tableBody.appendChild(tr);
@@ -111,7 +110,7 @@
                 alert("Cannot export: storage is corrupt.");
                 return;
             }
-            
+
             if (list.length === 0) { 
                 alert("No data to export.");
                 return;

@@ -50,9 +50,22 @@ Technologies Used
 
 --------------------------------------------------------------------------------
 
+Project Structure
+
+psa-rsvp/
+├── Images/          # Icons and graphics (flag, email, etc.)
+├── admin.html       # Admin dashboard for viewing/exporting submissions
+├── home.html        # Main RSVP form
+├── index.html       # “Coming soon” page with countdown to form opening
+├── success.html     # Confirmation page showing QR code and download option
+├── ticket.html      # Displays ticket info after QR scan and PIN entry
+├── test.html        # Extra page for experimenting with UI/code
+├── README.md        # Project overview
+└── notes.txt        # Development notes
+
 Future Features (Roadmap)
 
 - [ ] Switch to Firebase Realtime Database for secure cloud-based storage  
 - [ ] Email QR codes directly to users instead of displaying on the page  
-- [ ] Admin approval system for each submission  
+- [ ] Admin approval system for each submission before email is sent
 - [ ] Email calendar invite (.ics file) with confirmation  

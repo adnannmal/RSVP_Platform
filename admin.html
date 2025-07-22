@@ -130,7 +130,7 @@
                     guests.push(`${e.guest2fname} ${e.guest2lname}`);
                 }
 
-                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), new Date(e.submitTime).toLocaleString()].map(f => {
+                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), e.submitTime].map(f => {
                     const str = String(f);
                 return `"${str.replace(/"/g, '""')}"`;
                 });

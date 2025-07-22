@@ -130,7 +130,7 @@
                     guests.push(`${e.guest2fname} ${e.guest2lname}`);
                 }
 
-                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), new Date(e.submitTime)].map(f => `"${f.replace(/"/g,'""')}"`);
+                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), new Date(e.submitTime).toLocaleString()].map(f => `"${f.replace(/"/g,'""')}"`);
             });
 
             const csv = [headers.map(h=>`"${h}"`), ...rows].map(r=>r.join(",")).join("\r\n");

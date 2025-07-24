@@ -1,6 +1,7 @@
 To do:
 - Find out if you can see different submissions instead of locally stored
 - Remove locally stored data and qr code when backend starts
+- Remove hardcoded PIN to ensure security so no one can get it through elements tab
 
 BACKEND To do:
 - Send calender invites (.cs files) with confirmation email

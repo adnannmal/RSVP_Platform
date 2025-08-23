@@ -54,7 +54,7 @@ Technologies Used
 ## Project Structure
 
 📂 psa-rsvp
-├── 📂 Images/ # Icons and graphics (🇵🇰 flag, email, etc.)
+- ├── 📂 Images/ # Icons and graphics (🇵🇰 flag, email, etc.)
 ├── 📄 admin.html # Admin dashboard for viewing/exporting submissions
 ├── 📄 home.html # Main RSVP form
 ├── 📄 index.html # “Coming soon” page with countdown to form opening

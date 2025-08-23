@@ -54,24 +54,15 @@ Technologies Used
 ## Project Structure
 
 📂 psa-rsvp
-├── 📂 Images/
-# Icons and graphics (🇵🇰 flag, email, etc.)
-├── 📄 admin.html
- # Admin dashboard for viewing/exporting submissions
-├── 📄 home.html
- # Main RSVP form
-├── 📄 index.html
- # “Coming soon” page with countdown to form opening
-├── 📄 success.html
- # Confirmation page showing QR code and download option
-├── 📄 ticket.html
- # Displays ticket information after QR scan and secure PIN entry
-├── 📄 test.html
- # Extra page for experimenting with UI/code
-├── 📄 README.md
- # Project overview (what you're reading right now)
-└── 📄 notes.txt
- # Development notes
+├── 📂 Images/ # Icons and graphics (🇵🇰 flag, email, etc.)
+├── 📄 admin.html # Admin dashboard for viewing/exporting submissions
+├── 📄 home.html # Main RSVP form
+├── 📄 index.html # “Coming soon” page with countdown to form opening
+├── 📄 success.html # Confirmation page showing QR code and download option
+├── 📄 ticket.html # Displays ticket information after QR scan and secure PIN entry
+├── 📄 test.html # Extra page for experimenting with UI/code
+├── 📄 README.md # Project overview (what you're reading right now)
+└── 📄 notes.txt # Development notes
 
 Future Features (Roadmap)
 

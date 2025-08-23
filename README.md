@@ -53,7 +53,7 @@ Technologies Used
 
 ## Project Structure
 
-📂 psa-rsvp
+📂 psa-rsvp  
 ├── 📂 Images/ # Icons and graphics (🇵🇰 flag, email, etc.)  
 ├── 📄 admin.html # Admin dashboard for viewing/exporting submissions  
 ├── 📄 home.html # Main RSVP form  

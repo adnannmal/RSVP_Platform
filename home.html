@@ -116,7 +116,7 @@
             <button onclick="closePage()" class="absolute top-2 right-3 text-gray-600 text-xl">&times;</button> <!--X Button-->
             <h2 class="text-lg font-semibold mb-2">Contact Us</h2>
             <img src="Images/email.jpg" alt="Email" class="w-7 h-7 inline-block" />
-            Email: <a href="mailto:psa@pride.hofstra.edu" class="text-blue-600 hover:underline">psa@pride.hofstra.edu</a></p>
+            Email: <a href="mailto:psa@gmail.com" class="text-blue-600 hover:underline">psa@gmail.com</a></p>
             <img src="Images/insta.jpg" alt="Instagram" class="w-6 h-6 inline-block" />
             Instagram: <a href="https://instagram.com/hofstrapsa" target="_blank" class="text-blue-600 hover:underline">@hofstrapsa</a></p> 
         </div>
@@ -148,36 +148,36 @@
         // script for guest selection
 
         document.getElementById("statusSelect").addEventListener("change", function () {
-        const selected = this.value; // get value from dropdown entry
-        const guestField = document.getElementById("guestField"); // reference to submitted form
+            const selected = this.value; // get value from dropdown entry
+            const guestField = document.getElementById("guestField"); // reference to submitted form
 
-        // input fields for guest names
+            // input fields for guest names
 
-        const guest1fname = document.getElementById("guest1fname");
-        const guest1lname = document.getElementById("guest1lname");
-        const guest2fname = document.getElementById("guest2fname");
-        const guest2lname = document.getElementById("guest2lname");
+            const guest1fname = document.getElementById("guest1fname");
+            const guest1lname = document.getElementById("guest1lname");
+            const guest2fname = document.getElementById("guest2fname");
+            const guest2lname = document.getElementById("guest2lname");
 
-        if (selected === "guest") { // if yes show guest fields and make guest 1 required
-            guestField.classList.remove("hidden");
-            guest1fname.required = true;
-            guest1lname.required = true;
-            guest2fname.required = false;
-            guest2lname.required = false;
-        } 
-        else { // else all entry is hidden and requirement is removed
-            guestField.classList.add("hidden");
-            guest1fname.required = false;
-            guest1lname.required = false;
-            guest2fname.required = false;
-            guest2lname.required = false;
-        }
+            if (selected === "guest") { // if yes show guest fields and make guest 1 required
+                guestField.classList.remove("hidden");
+                guest1fname.required = true;
+                guest1lname.required = true;
+                guest2fname.required = false;
+                guest2lname.required = false;
+            } 
+            else { // else all entry is hidden and requirement is removed
+                guestField.classList.add("hidden");
+                guest1fname.required = false;
+                guest1lname.required = false;
+                guest2fname.required = false;
+                guest2lname.required = false;
+            }
         
         });
 
         // listens for form submission
 
-        document.getElementById("rsvpForm").addEventListener("submit", function (e) {
+        document.getElementById("rsvpForm").addEventListener("submit", async (e) => {
             e.preventDefault(); // prevents page to reload
 
             const form = e.target;
@@ -188,6 +188,8 @@
                 form.reportValidity();
                 return;
             }
+
+            /*
 
             // QR code expiration after event
 
@@ -205,111 +207,91 @@
 
             console.log(submitTime); // log time submitted
 
+            */
+
             // collect data from form to objects
 
             const data = {
-                fname: form.fname.value,
-                lname: form.lname.value,
-                email: form.email.value,
-                hofstraId: form.hofstraId.value,
+                fname: form.fname.value.trim(),
+                lname: form.lname.value.trim(),
+                email: form.email.value.trim(),
+                hofstraId: form.hofstraId.value.trim(),
                 status: form.status.value,
-                guest1fname: form.guest1fname.value || "",
-                guest1lname: form.guest1lname.value || "",
-                guest2fname: form.guest2fname.value || "",
-                guest2lname: form.guest2lname.value || "",
-                qrExpire: qrExpire,
-                submitTime: submitTime,
+                guest1fname: form.guest1fname.value.trim() || "",
+                guest1lname: form.guest1lname.value.trim() || "",
+                guest2fname: form.guest2fname.value.trim() || "",
+                guest2lname: form.guest2lname.value.trim() || "",
+                qrExpire: new Date("2025-08-01T00:00:00Z").toISOString(),
             };
 
-        console.log("Form submitted:", data); // confirm data is being correctly stored
+            try {
+                const resp = await fetch(`${API_BASE}/submit`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+                });
 
-        // store form data locally
-        
-        localStorage.setItem("qrData", JSON.stringify(data)); // store data locally into qrCode
+                const json = await resp.json();
 
-        // keeps rsvps in an array
+                if (!resp.ok || !json.success) {
+                alert(json.error || "Submission failed");
+                return;
+                }
 
-        let storedArray = JSON.parse(localStorage.getItem("qrDataList")) || [];
-        storedArray.push(data);
+                // Save server-issued id (ticket id) for success page
+                localStorage.setItem("ticketId", json.id);
+                window.location.href = "success.html";
+            } 
+            catch (err) {
+                console.error(err);
+                alert("Network error.");
+            }
+        });
 
-        localStorage.setItem("qrDataList", JSON.stringify(storedArray));
-
-        // wait 0.5 second before redirection to success page
-
-        setTimeout(() => {
-            window.location.href = "success.html"; // redirect to success.html page
-        }, 500);
-    });
-
-    // opens contact page
-
-    function openPage() { // open contact page
-        document.getElementById("contactPage").classList.remove("hidden");
-    }
-
-    // closes contact page
-
-    function closePage() { // close contact page
-        document.getElementById("contactPage").classList.add("hidden");
-    }
-
-    // countdown timer
-
-    const event = new Date("2025-10-01T00:00:00Z").getTime(); // set event time
-
-    const countdown = document.getElementById("countdown");
-
-    const countdownTimer = setInterval(() => { // run every second to update timer
-        const now = new Date().getTime(); // current time
-        const timeLeft = event - now; // time left
-
-        if (timeLeft <= 0) {
-            countdown.style.display = "none"; // hide countdown
+        function openPage() { // open contact page
+            document.getElementById("contactPage").classList.remove("hidden");
         }
 
-        // define days, hours, minutes, seconds
-
-        const days = Math.floor(timeLeft / (1000 * 60 *60 * 24));
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        // change color corresponding to how close the day is to day of event
-
-        let color = "text-black-700"; // default color
-        if (timeLeft < 1000 * 60 * 60 * 24 * 3) { // less than 3 days
-            color = "text-orange-500";
-        }
-        if (timeLeft < 1000 * 60 * 60 * 12) { // less than 12 hours
-            color = "text-yellow-500";
-        }
-        if (timeLeft < 1000 * 60 * 60 * 1) { // less than 1 hours
-            color = "text-red-600";
+        function closePage() { // close contact page
+            document.getElementById("contactPage").classList.add("hidden");
         }
 
-        countdown.className = `text-center text-lg font-semibold ${color} my-4`; // apply color
-        countdown.innerHTML = `⏳ ${days}d ${hours}h ${mins}m ${secs}s left`; // timer text + update
+        const event = new Date("2025-10-01T00:00:00Z").getTime(); // set event time
 
-    }, 1000); // update every second
+        const countdown = document.getElementById("countdown");
 
-    document.getElementById("rsvpForm").addEventListener("submit", async function (e) {
-        e.preventDefault(); // prevent form from reloading page
+        const countdownTimer = setInterval(() => { // run every second to update timer
+            const now = new Date().getTime(); // current time
+            const timeLeft = event - now; // time left
 
-        const form = e.target;
-  
-        const data = {
-            fname: form.fname.value,
-            lname: form.lname.value,
-            email: form.email.value,
-            hofstraId: form.hofstraId.value,
-            status: form.status.value,
-            guest1fname: form.guest1fname?.value || "",
-            guest1lname: form.guest1lname?.value || "",
-            guest2fname: form.guest2fname?.value || "",
-            guest2lname: form.guest2lname?.value || "",
-        };
-    });
-    
+            if (timeLeft <= 0) {
+                countdown.style.display = "none"; // hide countdown
+            }
+
+            // define days, hours, minutes, seconds
+
+            const days = Math.floor(timeLeft / (1000 * 60 *60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            // change color corresponding to how close the day is to day of event
+
+            let color = "text-black-700"; // default color
+            if (timeLeft < 1000 * 60 * 60 * 24 * 3) { // less than 3 days
+                color = "text-orange-500";
+            }
+            if (timeLeft < 1000 * 60 * 60 * 12) { // less than 12 hours
+                color = "text-yellow-500";
+            }
+            if (timeLeft < 1000 * 60 * 60 * 1) { // less than 1 hours
+                color = "text-red-600";
+            }
+
+            countdown.className = `text-center text-lg font-semibold ${color} my-4`; // apply color
+            countdown.innerHTML = `⏳ ${days}d ${hours}h ${mins}m ${secs}s left`; // timer text + update
+
+        }, 1000); // update every second
     </script>
 
 </body>

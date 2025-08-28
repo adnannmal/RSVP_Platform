@@ -50,6 +50,73 @@
         // Backend Start
 
 
+        const API_BASE = "http://localhost:3000"; // Server PORT
+
+        const tableBody = document.getElementById("tableData");
+        const exportBtn = document.getElementById("exportBtn");
+        const clearBtn  = document.getElementById("clearBtn");
+
+        // Load rows from the backend and populate the table
+        async function loadRSVPs() {
+            tableBody.innerHTML = "";
+            try {
+                const resp = await fetch(`${API_BASE}/rsvps`);
+                const list = await resp.json();
+
+                if (!Array.isArray(list) || list.length === 0) { // No RSVPS
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `<td colspan="5" class="border px-4 py-2 text-center italic text-gray-500">No RSVPs yet.</td>`;
+                    tableBody.appendChild(tr);
+                    return;
+                }
+
+                list.forEach(e => {
+                    const guests = []
+                    if (e.guest1fname || e.guest1lname) {
+                        guests.push(`${e.guest1fname || ""} ${e.guest1lname || ""}`.trim());
+                    }
+
+                    if (e.guest2fname || e.guest2lname) {
+                        guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
+                    }
+
+                    const tr = document.createElement("tr");
+                    
+                    tr.innerHTML = `<td class="border px-4 py-2">${(e.fname || "")} ${(e.lname || "")}</td>
+                        <td class="border px-4 py-2">${e.email || ""}</td>
+                        <td class="border px-4 py-2">${e.hofstraId || ""}</td>
+                        <td class="border px-4 py-2">${guests.join("<br>")}</td>
+                        <td class="border px-4 py-2">${e.submitTime || ""}</td>`;
+                    tableBody.appendChild(tr);
+                });
+            } 
+            catch (err) { // Error catch
+                console.error(err);
+                alert("Failed to load RSVPs");
+            }
+        }
+
+        // Trigger server-side CSV creation and download
+        function exportCSV() {
+            window.location.href = `${API_BASE}/export.csv`;
+        }
+
+        // Clear all entries on the backend
+        async function clearEntries() {
+        if (!confirm("Are you sure you want to delete ALL RSVP entries? This cannot be undone.")) return;
+            try {
+                await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
+                loadRSVPs();
+            } 
+            catch (err) {
+                console.error(err);
+                alert("Failed to clear");
+            }
+        }
+
+        exportBtn.addEventListener("click", exportCSV);
+        clearBtn.addEventListener("click", clearEntries);
+        window.addEventListener("DOMContentLoaded", loadRSVPs);
 
     /* Local Storage
         const STORAGE_KEY = "qrDataList"; // key under which the RSVP list is stored in localStorage

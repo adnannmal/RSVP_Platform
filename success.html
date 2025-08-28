@@ -50,10 +50,38 @@
         spread: 1000,
         origin: { y: -1.1 },
       });
+
+      const ticketId = localStorage.getItem("ticketId");
+
+      // Check for ticket ID
+      if (!ticketId) { 
+        console.warn("No ticketId found"); 
+        return; 
+      }
+
+      // Build a QR that points to ticket.html with the id
+      const ticketUrl = `${location.origin}/ticket.html?id=${encodeURIComponent(ticketId)}`;
+
+      const canvas = document.getElementById("qr-code");
+
+      QRCode.toCanvas(canvas, ticketUrl, (err) => { 
+        if (err) {
+          console.error(err); 
+        }
+      });
+
+      // Download button
+      document.getElementById("downloadBtn")?.addEventListener("click", () => {
+        const imgData = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = imgData; a.download = "ticket.png"; a.click();
+      });
+    });
+
+      /* Locally Stored Data
+
       const qrRaw = localStorage.getItem("qrData"); // get data from qrCode
       const qrData = JSON.parse(qrRaw); // parse and turn it back into object to allow for proper encoding
-
-      //const userEmail = localStorage.getItem("userEmail");
 
       if (!qrData) { // check for locally stored qr code data
         console.warn("No QR code data found in local storage");
@@ -96,7 +124,8 @@
       else {
         console.log("Download Unsuccessful");
       }
-
+      
+      */
   </script>
 </body>
 </html>

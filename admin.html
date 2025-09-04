@@ -6,7 +6,7 @@
     <meta charset="UTF-8" /> <!--tells web browser to interpret doc using UTF-8 encoding-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
     <title>Admin Dashboard</title> <!--Title shown in browser tab-->
-    <link rel="icon" type="image/png" href="Images/logo.jpg" /> <!-- Tab icon -->
+    <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
 </head>
 
@@ -97,7 +97,13 @@
 
         // Trigger server-side CSV creation and download
         function exportCSV() {
-            window.location.href = `${API_BASE}/export.csv`;
+            try {
+                window.location.href = `${API_BASE}/export.csv`;
+            }
+            catch (err) { // error catch
+                console.error(err);
+                alert("No RSVPS to Export");
+            }
         }
 
         // Clear all entries on the backend
@@ -109,7 +115,7 @@
             } 
             catch (err) {
                 console.error(err);
-                alert("Failed to clear");
+                alert("No RSVPS to clear");
             }
         }
 

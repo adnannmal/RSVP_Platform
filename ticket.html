@@ -55,6 +55,8 @@
         // Backend Start
 
         const API_BASE = "https://rsvp-backend-mb2j.onrender.com"; // Server PORT
+        const ADMIN_PIN = 412341;
+        
         // Read ticket ID from query
         const parameter = new URLSearchParams(location.search);
         const id = parameter.get("id");
@@ -66,136 +68,48 @@
 
         let record = null;
 
-        async function loadTicketRecord() {
-            const resp = await fetch(`${API_BASE}/rsvps`);
-            const list = await resp.json();
-            record = (list || []).find(r => r.id === id);
-
-            if (!record) {
-                document.body.innerHTML = `<p class="text-red-700 text-center font-bold">❌ Ticket not found.</p>`;
-                throw new Error("Ticket not found");
-            }
-
-            //If record contains qrExpire
-            if (record.qrExpire && new Date() > new Date(record.qrExpire)) {
-                document.body.innerHTML = `<p class="text-red-700 text-center font-bold">❌ This ticket has expired.</p>`;
-                throw new Error("Ticket expired");
-            }
-        }
-
-        async function verifyAndShow() {
-        const input = document.getElementById("pass").value.trim();
-
-        const ok = input === CLIENT_PIN;
-
-        if (!ok) {
-            document.getElementById("error").classList.remove("hidden");
-            return;
-        }
-
-        document.getElementById("authUser").classList.add("hidden");
-
-        const guests = [];
-        if (record.guest1fname || record.guest1lname) guests.push(`${record.guest1fname || ""} ${record.guest1lname || ""}`.trim());
-        if (record.guest2fname || record.guest2lname) guests.push(`${record.guest2fname || ""} ${record.guest2lname || ""}`.trim());
-
-        const ticket = document.getElementById("ticket");
-
-        ticket.innerHTML = `
-            <div class="space-y-3 text-left">
-            <h2 class="text-2xl font-bold text-green-700 mb-2">🎟️ Event Ticket</h2>
-            <p><strong>Full Name:</strong> ${record.fname} ${record.lname}</p>
-            ${guests.length ? `<div><p class="font-semibold">Guests:</p><ul class="list-disc list-inside text-gray-700">${guests.map(g=>`<li>${g}</li>`).join("")}</ul></div>` : ""}
-            ${record.hofstraId ? `<p><strong>Hofstra ID:</strong> ${record.hofstraId}</p>` : ""}
-            ${record.submitTime ? `<p><strong>Submitted:</strong> ${record.submitTime}</p>` : ""}
-            <p class="text-sm text-gray-500 mt-2">Ticket ID: ${record.id}</p>
-            </div>`;
-
-            ticket.classList.remove("hidden");
-        }
-
-        document.getElementById("submitPin").addEventListener("click", verifyAndShow);
+        // fetch ticket record from backend
 
         (async () => {
-            try { 
-                await loadTicketRecord(); 
-            } 
-            catch (e) { 
-                console.error(e); 
+            const resp = await fetch(`${API_BASE}/ticket/${id}`);
+            const data = await resp.json();
+            if (!data.ok) {
+                document.body.innerHTML = `<p class="text-red-600">❌ ${data.error}</p>`;
+                return;
             }
+            record = data.ticket;
         })();
 
-
-        /* Locally Stored
-        const password = "412341"; // set password for entry
-
-        let data;
-        try {
-            const query = new URLSearchParams(window.location.search); // get data from QR code
-
-            data = JSON.parse(decodeURIComponent(query.get("data"))); // decode data string back to a object
-
-            console.log("Decoded data:", data);
-
-            // check date
-
-            const dateNow = new Date();
-            const qrExpire = new Date(data.qrExpire);
-
-            if (dateNow > qrExpire) {    
-                throw new Error("Ticket expired");
-            }
-            
-            console.log("Valid ticket");
-        } 
-        catch (err) { // error catch
-            document.body.innerHTML = `<p class="text-red-700 text-center font-bold">❌ This ticket has expired.</p>`;
-            throw err;
-        }
-
-         // verify password and display ticket
+        // verify PIN then show ticket
 
         function checkPass() {
             const input = document.getElementById("pass").value;
-
-            if (input === password) { 
-                document.getElementById("authUser").classList.add("hidden");
-
-                const ticket = document.getElementById("ticket");
-
-                // build guest list conditionally
-
-                let guestHTML = "";
-                if (data.guest1fname || data.guest1lname) {
-                    guestHTML += `<li>${data.guest1fname} ${data.guest1lname}</li>`;
-                }
-                if (data.guest2fname || data.guest2lname) {
-                    guestHTML += `<li>${data.guest2fname} ${data.guest2lname}</li>`;
-                }
-
-                // build ticket layout - local
-
-                ticket.innerHTML = `
-                    <div class="space-y-3 text-left">
-                        <h2 class="text-2xl font-bold text-green-700 mb-2">🎟️ Your Event Ticket</h2>
-                        <p><strong>Full Name:</strong> ${data.fname} ${data.lname}</p>
-                        ${guestHTML
-                            ? `<div>
-                                <p class="font-semibold">Guests:</p>
-                                <ul class="list-disc list-inside text-gray-700">${guestHTML}</ul>
-                            </div>`
-                        : ""}
-                    </div>
-                `;
-
-                ticket.classList.remove("hidden");
-            } 
-            else {
+            if (input !== ADMIN_PIN) {
                 document.getElementById("error").classList.remove("hidden");
+                return;
             }
-        }
-    */
+            document.getElementById("authUser").classList.add("hidden");
 
+            const guests = [];
+            
+            if (record.guest1fname || record.guest1lname) {
+                guests.push(`${record.guest1fname} ${record.guest1lname}`);
+            }
+
+            if (record.guest2fname || record.guest2lname) {
+                guests.push(`${record.guest2fname} ${record.guest2lname}`);
+            }
+
+            document.getElementById("ticket").innerHTML = `
+                <h2 class="text-xl font-bold text-green-700">🎟️ Event Ticket</h2>
+                <p><strong>Name:</strong> ${record.fname} ${record.lname}</p>
+                ${record.hofstraId ? `<p><strong>ID:</strong> ${record.hofstraId}</p>` : ""}
+                ${guests.length ? `<p><strong>Guests:</strong> ${guests.join(", ")}</p>` : ""}
+                <p class="text-sm text-gray-500">Ticket ID: ${record.id}</p>
+            `;
+
+            document.getElementById("ticket").classList.remove("hidden");
+        }
     </script>
 </body>
 </html>

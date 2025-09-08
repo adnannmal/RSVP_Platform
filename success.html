@@ -45,7 +45,7 @@
   
   
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", async () => {
       confetti({
         particleCount: 4500,
         spread: 1000,
@@ -56,7 +56,7 @@
 
       // Check for ticket ID
       if (!ticketId) { 
-        console.warn("No ticketId found"); 
+        document.body.innerHTML = `<p class="text-red-600">❌ Missing ticket id</p>`;
         return; 
       }
 
@@ -65,11 +65,7 @@
 
       const canvas = document.getElementById("qr-code");
 
-      QRCode.toCanvas(canvas, ticketUrl, (err) => { 
-        if (err) {
-          console.error(err); 
-        }
-      });
+      QRCode.toCanvas(canvas, ticketUrl, (err) => err && console.error(err));
 
       // Download button
       document.getElementById("downloadBtn")?.addEventListener("click", () => {
@@ -78,55 +74,6 @@
         a.href = imgData; a.download = "ticket.png"; a.click();
       });
     });
-
-      /* Locally Stored Data
-
-      const qrRaw = localStorage.getItem("qrData"); // get data from qrCode
-      const qrData = JSON.parse(qrRaw); // parse and turn it back into object to allow for proper encoding
-
-      if (!qrData) { // check for locally stored qr code data
-        console.warn("No QR code data found in local storage");
-        return;
-      }
-
-      const canvas = document.getElementById("qr-code");
-
-
-      // Encode QR code with form data and transition to ticket.html
-
-      const encoded = encodeURIComponent(JSON.stringify(qrData));
-      const ticketUri = `https://psa-rsvp.vercel.app/ticket.html?data=${encoded}`;
-
-      // Render QR code
-
-      QRCode.toCanvas(canvas, ticketUri, function (error) {
-        if (error) {
-          console.error("QR Code generation failed", error);
-          return;
-        }
-        console.log("QR Code generated successfully");
-      });
-    });
-
-      // Download QR code as PNG
-
-      const dowloadButton = document.getElementById("downloadBtn");
-      if (dowloadButton) {
-        dowloadButton.addEventListener("click", function () {
-        const canvas = document.getElementById("qr-code");
-        const imgData = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.href = imgData;
-        link.download = "ticket.png";
-        link.click();
-        console.log("Download Successful");
-        });
-      }
-      else {
-        console.log("Download Unsuccessful");
-      }
-      
-      */
   </script>
 </body>
 </html>

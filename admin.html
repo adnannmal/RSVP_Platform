@@ -49,201 +49,46 @@
 
     <script>
         // Backend Start
-        const API_BASE = "https://rsvp-backend-mb2j.onrender.com"; // Server PORT
+        const API_BASE = "https://rsvp-backend-mb2j.onrender.com"; // Server PORT;
 
-        const tableBody = document.getElementById("tableData");
-        const exportBtn = document.getElementById("exportBtn");
-        const clearBtn  = document.getElementById("clearBtn");
-
-        // Load rows from the backend and populate the table
         async function loadRSVPs() {
-            tableBody.innerHTML = "";
-            try {
-                const resp = await fetch(`${API_BASE}/rsvps`);
-                const list = await resp.json();
+            const resp = await fetch(`${API_BASE}/rsvps`);
+            const list = await resp.json();
+            const tbody = document.getElementById("tableData");
+            tbody.innerHTML = "";
 
-                if (!Array.isArray(list) || list.length === 0) { // No RSVPS
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `<td colspan="5" class="border px-4 py-2 text-center italic text-gray-500">No RSVPs yet.</td>`;
-                    tableBody.appendChild(tr);
-                    return;
-                }
-
-                list.forEach(e => {
-                    const guests = []
-                    if (e.guest1fname || e.guest1lname) {
-                        guests.push(`${e.guest1fname || ""} ${e.guest1lname || ""}`.trim());
-                    }
-
-                    if (e.guest2fname || e.guest2lname) {
-                        guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
-                    }
-
-                    const tr = document.createElement("tr");
-                    
-                    tr.innerHTML = `<td class="border px-4 py-2">${(e.fname || "")} ${(e.lname || "")}</td>
-                        <td class="border px-4 py-2">${e.email || ""}</td>
-                        <td class="border px-4 py-2">${e.hofstraId || ""}</td>
-                        <td class="border px-4 py-2">${guests.join("<br>")}</td>
-                        <td class="border px-4 py-2">${e.submitTime || ""}</td>`;
-                    tableBody.appendChild(tr);
-                });
-            } 
-            catch (err) { // Error catch
-                console.error(err);
-                alert("Failed to load RSVPs");
-            }
-        }
-
-        // Trigger server-side CSV creation and download
-        function exportCSV() {
-            try {
-                window.location.href = `${API_BASE}/export.csv`;
-            }
-            catch (err) { // error catch
-                console.error(err);
-                alert("No RSVPS to Export");
-            }
-        }
-
-        // Clear all entries on the backend
-        async function clearEntries() {
-        if (!confirm("Are you sure you want to delete ALL RSVP entries? This cannot be undone.")) return;
-            try {
-                await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
-                loadRSVPs();
-            } 
-            catch (err) {
-                console.error(err);
-                alert("No RSVPS to clear");
-            }
-        }
-
-        exportBtn.addEventListener("click", exportCSV);
-        clearBtn.addEventListener("click", clearEntries);
-        window.addEventListener("DOMContentLoaded", loadRSVPs);
-
-    /* Local Storage
-        const STORAGE_KEY = "qrDataList"; // key under which the RSVP list is stored in localStorage
-
-        const tableBody   = document.getElementById("tableData");
-        const exportBtn   = document.getElementById("exportBtn");
-        const clearBtn    = document.getElementById("clearBtn");
-
-        function loadRSVPs() { // fetches the RSVP array from localStorage, parses it, and populates the table
-            tableBody.innerHTML = "";
-            let list = [];
-
-            try { // handles empty-state and corrupt data.
-                list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            } 
-            catch {
-                console.warn("Corrupt storage; resetting.");
-                localStorage.removeItem(STORAGE_KEY);
-            }
-
-            if (list.length === 0) { // no entries show a row indicating "No RSVPs yet
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                <td colspan="5"
-                    class="border px-4 py-2 text-center italic text-gray-500">
-                    No RSVPs yet.
-                </td>`;
-
-                tableBody.appendChild(tr);
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center italic">No RSVPs yet.</td></tr>`;
                 return;
             }
 
-            list.slice().reverse().forEach(entry => { // reverses list to show latest submissions first
-                const tr = document.createElement("tr");
-
-                // Build guest list
-                
-                const guests = [];
-                if (entry.guest1fname) guests.push(`${entry.guest1fname} ${entry.guest1lname}`);
-                if (entry.guest2fname) guests.push(`${entry.guest2fname} ${entry.guest2lname}`);
-
-                tr.innerHTML = `
-                <td class="border px-4 py-2">${entry.fname} ${entry.lname}</td>
-                <td class="border px-4 py-2">${entry.email}</td>
-                <td class="border px-4 py-2">${entry.hofstraId}</td>
-                <td class="border px-4 py-2">${guests.join("<br>")}</td>
-                <td class="border px-4 py-2">${entry.submitTime }
-                </td>
-                `;
-
-                tableBody.appendChild(tr);
+            list.forEach(r => {
+                const guests = [r.guest1fname, r.guest1lname, r.guest2fname, r.guest2lname].filter(Boolean).join(" ");
+                tbody.innerHTML += `
+                <tr>
+                    <td class="border px-4 py-2">${r.fname} ${r.lname}</td>
+                    <td class="border px-4 py-2">${r.email}</td>
+                    <td class="border px-4 py-2">${r.hofstraId}</td>
+                    <td class="border px-4 py-2">${guests}</td>
+                    <td class="border px-4 py-2">${r.submitTime}</td>
+                </tr>`;
             });
         }
 
-        // Export the full list as CSV
+        document.getElementById("exportBtn").addEventListener("click", () => {
+            window.location.href = `${API_BASE}/export.csv`;
+        });
 
-        function exportCSV() { // converts the entire RSVP list into a CSV string
-            let list = [];
-
-            try { 
-                list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            } 
-            catch { 
-                alert("Cannot export: storage is corrupt.");
+        document.getElementById("clearBtn").addEventListener("click", async () => {
+            if (!confirm("Clear ALL RSVPs?")) {
                 return;
             }
 
-            if (list.length === 0) { 
-                alert("No data to export.");
-                return;
-            }
+            await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
+            loadRSVPs();
+        });
 
-            const headers = ["Name","Email","ID","Guests","Time"];
-
-            const rows = list.slice().reverse().map(e => {
-                const guests = [];
-                
-                if (e.guest1fname) {
-                    guests.push(`${e.guest1fname} ${e.guest1lname}`);
-                }
-
-                if (e.guest2fname) {
-                    guests.push(`${e.guest2fname} ${e.guest2lname}`);
-                }
-
-                return [`${e.fname} ${e.lname}`, e.email, e.hofstraId, guests.join(" | "), e.submitTime].map(f => {
-                    const str = String(f);
-                return `"${str.replace(/"/g, '""')}"`;
-                });
-            });
-
-            const csv = [headers.map(h=>`"${h}"`), ...rows].map(r=>r.join(",")).join("\r\n");
-
-            const blob = new Blob([csv], { type: "text/csv" }); // creates a Blob
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-
-            a.href = url;
-            a.download = `rsvp_data-${new Date().toISOString().split("T")[0]}.csv`;
-
-            document.body.appendChild(a);
-            a.click(); // trigger download
-            document.body.removeChild(a);
-
-            URL.revokeObjectURL(url); // release memory
-        }
-
-        function clearEntries() { // clear storage & refresh page
-            if (!confirm( // prompts the user for confirmation
-                "Are you sure you want to delete ALL RSVP entries? This cannot be undone."
-            )) return;
-
-            localStorage.removeItem(STORAGE_KEY); // removes all data from localStorage
-            loadRSVPs(); // refresh table
-        }
-
-        // wire up event listeners after DOM is ready
-
-        exportBtn.addEventListener("click", exportCSV);
-        clearBtn.addEventListener("click", clearEntries);
         window.addEventListener("DOMContentLoaded", loadRSVPs);
-    */
     </script>
 </body>
 </html>

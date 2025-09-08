@@ -135,6 +135,8 @@
 
 
     <script>
+        const API_BASE = "https://rsvp-backend-mb2j.onrender.com"; // Server PORT
+        
         // form expiration (hide submit button)
 
         const dateNow = new Date();
@@ -189,38 +191,18 @@
                 return;
             }
 
-            /*
-
-            // QR code expiration after event
-
-            const qrExpire = new Date("2025-10-01T00:00:00Z").toISOString(); // date qr code expires
-
-            // time submitted
-
-            const submitTime = new Date().toLocaleString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit"
-            });
-
-            console.log(submitTime); // log time submitted
-
-            */
-
             // collect data from form to objects
 
             const data = {
-                fname: form.fname.value.trim(),
-                lname: form.lname.value.trim(),
-                email: form.email.value.trim(),
-                hofstraId: form.hofstraId.value.trim(),
+                fname: form.fname.value,
+                lname: form.lname.value,
+                email: form.email.value,
+                hofstraId: form.hofstraId.value,
                 status: form.status.value,
-                guest1fname: form.guest1fname.value.trim() || "",
-                guest1lname: form.guest1lname.value.trim() || "",
-                guest2fname: form.guest2fname.value.trim() || "",
-                guest2lname: form.guest2lname.value.trim() || "",
+                guest1fname: form.guest1fname.value || "",
+                guest1lname: form.guest1lname.value || "",
+                guest2fname: form.guest2fname.value || "",
+                guest2lname: form.guest2lname.value || "",
                 qrExpire: new Date("2025-08-01T00:00:00Z").toISOString(),
             };
 
@@ -231,15 +213,15 @@
                 body: JSON.stringify(data)
                 });
 
-                const json = await resp.json();
+                const result = await resp.json();
 
-                if (!resp.ok || !json.success) {
-                alert(json.error || "Submission failed");
-                return;
+                if (!result.success) {
+                    throw new Error (result.error || "Submission Failed");
+                    return;
                 }
 
                 // Save server-issued id (ticket id) for success page
-                localStorage.setItem("ticketId", json.id);
+                localStorage.setItem("ticketId", result.id);
                 window.location.href = "success.html";
             } 
             catch (err) {

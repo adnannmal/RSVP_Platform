@@ -45,33 +45,34 @@
   
   
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      confetti({
-        particleCount: 4500,
-        spread: 1000,
-        origin: { y: -1.1 },
-      });
+    document.addEventListener("DOMContentLoaded", () => {
+      try { 
+        confetti?.({ 
+          particleCount: 800, 
+          spread: 160, 
+          origin: { y: 0.6 } 
+        }); 
+      } 
+      catch {}
 
-      const ticketId = localStorage.getItem("ticketId");
-
-      // Check for ticket ID
-      if (!ticketId) { 
-        document.body.innerHTML = `<p class="text-red-600">❌ Missing ticket id</p>`;
-        return; 
+      const id = localStorage.getItem("ticketId");
+      if (!id) {
+        return console.warn("No ticketId in storage");
       }
 
-      // Build a QR that points to ticket.html with the id
-      const ticketUrl = `${location.origin}/ticket.html?id=${encodeURIComponent(ticketId)}`;
-
       const canvas = document.getElementById("qr-code");
+      const ticketUrl = `${location.origin}/ticket.html?id=${encodeURIComponent(id)}`;
 
-      QRCode.toCanvas(canvas, ticketUrl, (err) => err && console.error(err));
+      if (window.QRCode?.toCanvas) {
+        QRCode.toCanvas(canvas, ticketUrl, (err) => err && console.error(err));
+      }
 
-      // Download button
       document.getElementById("downloadBtn")?.addEventListener("click", () => {
-        const imgData = canvas.toDataURL("image/png");
+        const data = canvas.toDataURL("image/png");
         const a = document.createElement("a");
-        a.href = imgData; a.download = "ticket.png"; a.click();
+        a.href = data;
+        a.download = "ticket.png";
+        a.click();
       });
     });
   </script>

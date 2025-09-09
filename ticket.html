@@ -52,64 +52,86 @@
     <div id="ticket" class="hidden mt-4 p-6 bg-white rounded shadow max-w-md w-full"></div>
 
     <script>
-        // Backend Start
+        const API_BASE = "https://rsvp-backend-mb2j.onrender.com";
 
-        const API_BASE = "https://rsvp-backend-mb2j.onrender.com"; // Server PORT
-        const ADMIN_PIN = 412341;
-        
-        // Read ticket ID from query
-        const parameter = new URLSearchParams(location.search);
-        const id = parameter.get("id");
+        const params = new URLSearchParams(location.search);
+        const id = params.get("id");
 
-        if (!id) {
-            document.body.innerHTML = `<p class="text-red-700 text-center font-bold">❌ Missing ticket id.</p>`;
-            throw new Error("Missing ticket ID");
+        let ticket = null;
+
+        async function fetchTicket() {
+            if (!id) {
+                throw new Error("Missing ticket id");
+            }
+
+            const r = await fetch(`${API_BASE}/ticket/${encodeURIComponent(id)}`);
+            const j = await r.json();
+
+            if (!j.ok) {
+                throw new Error(j.error || "Ticket error");
+            }
+
+            ticket = j.ticket;
         }
 
-        let record = null;
+        async function verifyPin(pin) {
+            const r = await fetch(`${API_BASE}/verify-pin`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pin: String(pin || "") })
+            });
 
-        // fetch ticket record from backend
+            const j = await r.json();
+            return !!j.ok;
+        }
 
-        (async () => {
-            const resp = await fetch(`${API_BASE}/ticket/${id}`);
-            const data = await resp.json();
-            if (!data.ok) {
-                document.body.innerHTML = `<p class="text-red-600">❌ ${data.error}</p>`;
-                return;
+        function renderTicket() {
+            const wrap = document.getElementById("ticket");
+            const guests = [];
+
+            if (ticket.guest1fname || ticket.guest1lname) {
+                guests.push(`${ticket.guest1fname || ""} ${ticket.guest1lname || ""}`.trim());
             }
-            record = data.ticket;
-        })();
 
-        // verify PIN then show ticket
+            if (ticket.guest2fname || ticket.guest2lname) {
+                guests.push(`${ticket.guest2fname || ""} ${ticket.guest2lname || ""}`.trim());
+            }
 
-        function checkPass() {
-            const input = document.getElementById("pass").value;
-            if (input !== ADMIN_PIN) {
+            wrap.innerHTML = `
+                <div class="space-y-3 text-left">
+                <h2 class="text-2xl font-bold text-green-700 mb-2">🎟️ Event Ticket</h2>
+                <p><strong>Name:</strong> ${ticket.fname || ""} ${ticket.lname || ""}</p>
+                ${ticket.hofstraId ? `<p><strong>ID:</strong> ${ticket.hofstraId}</p>` : ""}
+                ${guests.length ? `<div><p class="font-semibold">Guests:</p><ul class="list-disc list-inside text-gray-700">${guests.map(g=>`<li>${g}</li>`).join("")}</ul></div>` : ""}
+                ${ticket.submitTime ? `<p class="text-sm text-gray-500">Submitted: ${ticket.submitTime}</p>` : ""}
+                <p class="text-xs text-gray-400">Ticket ID: ${ticket.id}</p>
+                </div>
+            `;
+            wrap.classList.remove("hidden");
+        }
+
+        document.getElementById("submitPin")?.addEventListener("click", async () => {
+            const val = document.getElementById("pass").value.trim();
+            const ok = await verifyPin(val);
+            
+            if (!ok) {
                 document.getElementById("error").classList.remove("hidden");
                 return;
             }
+
             document.getElementById("authUser").classList.add("hidden");
+            renderTicket();
+        });
 
-            const guests = [];
-            
-            if (record.guest1fname || record.guest1lname) {
-                guests.push(`${record.guest1fname} ${record.guest1lname}`);
+        (async () => {
+            try { 
+                await fetchTicket(); 
             }
-
-            if (record.guest2fname || record.guest2lname) {
-                guests.push(`${record.guest2fname} ${record.guest2lname}`);
+            catch (e) {
+                console.error(e);
+                document.body.innerHTML = `<p class="text-red-700 text-center font-bold">❌ ${e.message}</p>`;
             }
-
-            document.getElementById("ticket").innerHTML = `
-                <h2 class="text-xl font-bold text-green-700">🎟️ Event Ticket</h2>
-                <p><strong>Name:</strong> ${record.fname} ${record.lname}</p>
-                ${record.hofstraId ? `<p><strong>ID:</strong> ${record.hofstraId}</p>` : ""}
-                ${guests.length ? `<p><strong>Guests:</strong> ${guests.join(", ")}</p>` : ""}
-                <p class="text-sm text-gray-500">Ticket ID: ${record.id}</p>
-            `;
-
-            document.getElementById("ticket").classList.remove("hidden");
-        }
+        })();
     </script>
 </body>
 </html>

@@ -1,5 +1,3 @@
-<!-- Use to test large additions of code to make webpage look cleaner or test out new functions-->
-
 <!DOCTYPE html> <!--recognizes file type as HTML-->
 
 <html lang="en"> <!--sets language to english-->
@@ -10,7 +8,6 @@
     <title>PSA RSVP Form</title> <!--Title shown in browser tab-->
     <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
     <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
-    <!--Fade in animation-->
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -18,7 +15,7 @@
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
+        animation: fadeIn 0.8s ease-out forwards;
         }
     </style>
 </head>
@@ -119,7 +116,7 @@
             <button onclick="closePage()" class="absolute top-2 right-3 text-gray-600 text-xl">&times;</button> <!--X Button-->
             <h2 class="text-lg font-semibold mb-2">Contact Us</h2>
             <img src="Images/email.jpg" alt="Email" class="w-7 h-7 inline-block" />
-            Email: <a href="mailto:psa@pride.hofstra.edu" class="text-blue-600 hover:underline">psa@pride.hofstra.edu</a></p>
+            Email: <a href="mailto:hofstrapsa@gmail.com" class="text-blue-600 hover:underline">hofstrapsa@gmail.com</a></p>
             <img src="Images/insta.jpg" alt="Instagram" class="w-6 h-6 inline-block" />
             Instagram: <a href="https://instagram.com/hofstrapsa" target="_blank" class="text-blue-600 hover:underline">@hofstrapsa</a></p> 
         </div>
@@ -136,145 +133,78 @@
         </button>
     </div>
 
-
     <script>
-        // form expiration
+        const API_BASE = "https://rsvp-backend-mb2j.onrender.com";
 
-        const dateNow = new Date();
-        const formExpire = new Date("2025-08-01T01:00:00Z");
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("rsvpForm");
+            const statusSel = document.getElementById("statusSelect");
+            const guestField = document.getElementById("guestField");
 
-        if (dateNow > formExpire) {
-            const submitBtn = document.getElementById('submitBtn')
-            submitBtn.classList.add("hidden");
-        }
+            // Show/hide guest fields
+            statusSel?.addEventListener("change", function () {
+                const needsGuests = this.value === "guest";
+                guestField?.classList.toggle("hidden", !needsGuests);
+                const g1f = document.getElementById("guest1fname");
+                const g1l = document.getElementById("guest1lname");
+                if (g1f && g1l) {
+                    g1f.required = needsGuests;
+                    g1l.required = needsGuests;
+                }
+            });
 
-        // script for guest selection
+            // Submit -> POST
+            form?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (!form.checkValidity()) { 
+                    form.reportValidity(); 
+                    return; 
+                }
 
-        document.getElementById("statusSelect").addEventListener("change", function () {
-        const selected = this.value; // get value from dropdown entry
-        const guestField = document.getElementById("guestField"); // reference to submitted form
-
-        // input fields for guest names
-
-        const guest1fname = document.getElementById("guest1fname");
-        const guest1lname = document.getElementById("guest1lname");
-        const guest2fname = document.getElementById("guest2fname");
-        const guest2lname = document.getElementById("guest2lname");
-
-        if (selected === "guest") { // if yes show guest fields and make guest 1 required
-            guestField.classList.remove("hidden");
-            guest1fname.required = true;
-            guest1lname.required = true;
-            guest2fname.required = false;
-            guest2lname.required = false;
-        } 
-        else { // else all entry is hidden and requirement is removed
-            guestField.classList.add("hidden");
-            guest1fname.required = false;
-            guest1lname.required = false;
-            guest2fname.required = false;
-            guest2lname.required = false;
-        }
-        
-        });
-
-        // listens for form submission
-
-        document.getElementById("rsvpForm").addEventListener("submit", function (e) {
-            e.preventDefault(); // prevents page to reload
-
-            const form = e.target;
-
-            // validate manually to prevent "not focusable" error
-
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            // QR code expiration after event
-
-            const qrExpire = new Date("2025-08-01T00:00:00Z").toISOString(); // date qr code expires
-
-            // collect data from form to objects
-
-            const data = {
-                fname: form.fname.value,
-                lname: form.lname.value,
-                email: form.email.value,
-                hofstraId: form.hofstraId.value,
+                const data = {
+                fname: form.fname.value.trim(),
+                lname: form.lname.value.trim(),
+                email: form.email.value.trim(),
+                hofstraId: form.hofstraId.value.trim(),
                 status: form.status.value,
-                guest1fname: form.guest1fname.value || "",
-                guest1lname: form.guest1lname.value || "",
-                guest2fname: form.guest2fname.value || "",
-                guest2lname: form.guest2lname.value || "",
-                qrExpire: qrExpire,
-            };
+                guest1fname: form.guest1fname?.value.trim() || "",
+                guest1lname: form.guest1lname?.value.trim() || "",
+                guest2fname: form.guest2fname?.value.trim() || "",
+                guest2lname: form.guest2lname?.value.trim() || "",
 
-        console.log("Form submitted:", data); // confirm data is being correctly stored
+                // track expiry
+                qrExpire: new Date("2025-12-31T23:59:59Z").toISOString()
+                };
 
-        // store form data locally
+                try {
+                    const resp = await fetch(`${API_BASE}/submit`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
 
-        localStorage.setItem("qrData", JSON.stringify(data)); // store data locally into qrCode
+                    let json = {};
+                    try { json = await resp.json(); } catch {}
 
-        // wait 0.5 second before redirection to success page
+                    if (resp.status === 409) {
+                        alert("An RSVP with this email or Hofstra ID already exists.");
+                        return;
+                    }
+                    if (!resp.ok || !json.success) {
+                        alert(json.error || "Submission failed. Try again.");
+                        return;
+                    }
 
-        setTimeout(() => {
-            window.location.href = "success.html"; // redirect to success.html page
-        }, 500);
-    });
-
-    // opens contact page
-
-    function openPage() { // open contact page
-        document.getElementById("contactPage").classList.remove("hidden");
-    }
-
-    // closes contact page
-
-    function closePage() { // close contact page
-        document.getElementById("contactPage").classList.add("hidden");
-    }
-
-    // countdown timer
-
-    const event = new Date("2025-08-01T00:00:00Z").getTime(); // set event time
-
-    const countdown = document.getElementById("countdown");
-
-    const countdownTimer = setInterval(() => { // run every second to update timer
-        const now = new Date().getTime(); // current time
-        const timeLeft = event - now; // time left
-
-        if (timeLeft <= 0) {
-            countdown.style.display = "none"; // hide countdown
-        }
-
-        // define days, hours, minutes, seconds
-
-        const days = Math.floor(timeLeft / (1000 * 60 *60 * 24));
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        // change color corresponding to how close the day is to day of event
-
-        let color = "text-black-700"; // default color
-        if (timeLeft < 1000 * 60 * 60 * 24 * 3) { // less than 3 days
-            color = "text-orange-500";
-        }
-        if (timeLeft < 1000 * 60 * 60 * 12) { // less than 12 hours
-            color = "text-yellow-500";
-        }
-        if (timeLeft < 1000 * 60 * 60 * 1) { // less than 1 hours
-            color = "text-red-600";
-        }
-
-        countdown.className = `text-center text-lg font-semibold ${color} my-4`; // apply color
-        countdown.innerHTML = `⏳ ${days}d ${hours}h ${mins}m ${secs}s left`; // timer text + update
-
-    }, 1000); // update every second
-
+                    // Only store the server-issued id
+                    localStorage.setItem("ticketId", json.id);
+                    window.location.href = "success.html";
+                } 
+                catch (err) {
+                    console.error(err);
+                    alert("Network error. Please try again.");
+                }
+            });
+        });
     </script>
 </body>
 </html>

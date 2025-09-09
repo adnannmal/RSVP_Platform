@@ -48,47 +48,73 @@
     </div>
 
     <script>
-        // Backend Start
-        const API_BASE = "https://rsvp-backend-mb2j.onrender.com"; // Server PORT;
+        const API_BASE = "https://rsvp-backend-mb2j.onrender.com";
+
+        const tableBody = document.getElementById("tableData");
+        const exportBtn = document.getElementById("exportBtn");
+        const clearBtn  = document.getElementById("clearBtn");
 
         async function loadRSVPs() {
-            const resp = await fetch(`${API_BASE}/rsvps`);
-            const list = await resp.json();
-            const tbody = document.getElementById("tableData");
-            tbody.innerHTML = "";
+            tableBody.innerHTML = "";
+            try {
+                const r = await fetch(`${API_BASE}/rsvps`);
+                const list = await r.json();
 
-            if (!list.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center italic">No RSVPs yet.</td></tr>`;
-                return;
+                if (!Array.isArray(list) || list.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="border px-4 py-2 text-center italic text-gray-500">No RSVPs yet.</td></tr>`;
+                    return;
+                }
+
+                for (const e of list) {
+                    const guests = [];
+                    
+                    if (e.guest1fname || e.guest1lname) {
+                        guests.push(`${e.guest1fname || ""} ${e.guest1lname || ""}`.trim());
+                    }
+
+                    if (e.guest2fname || e.guest2lname) {
+                        guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
+                    }
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td class="border px-4 py-2">${(e.fname || "")} ${(e.lname || "")}</td>
+                        <td class="border px-4 py-2">${e.email || ""}</td>
+                        <td class="border px-4 py-2">${e.hofstraId || ""}</td>
+                        <td class="border px-4 py-2">${guests.join("<br>")}</td>
+                        <td class="border px-4 py-2">${e.submitTime || ""}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                }
+            } 
+            catch (err) {
+                console.error(err);
+                alert("Failed to load RSVPs");
             }
-
-            list.forEach(r => {
-                const guests = [r.guest1fname, r.guest1lname, r.guest2fname, r.guest2lname].filter(Boolean).join(" ");
-                tbody.innerHTML += `
-                <tr>
-                    <td class="border px-4 py-2">${r.fname} ${r.lname}</td>
-                    <td class="border px-4 py-2">${r.email}</td>
-                    <td class="border px-4 py-2">${r.hofstraId}</td>
-                    <td class="border px-4 py-2">${guests}</td>
-                    <td class="border px-4 py-2">${r.submitTime}</td>
-                </tr>`;
-            });
         }
 
-        document.getElementById("exportBtn").addEventListener("click", () => {
+        function exportCSV() {
             window.location.href = `${API_BASE}/export.csv`;
-        });
+        }
 
-        document.getElementById("clearBtn").addEventListener("click", async () => {
-            if (!confirm("Clear ALL RSVPs?")) {
+        async function clearEntries() {
+            if (!confirm("Delete ALL RSVP entries? This cannot be undone.")) {
                 return;
             }
+            try {
+                await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
+                loadRSVPs();
+            } 
+            catch (err) {
+                console.error(err);
+                alert("Failed to clear");
+            }
+        }
 
-            await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
-            loadRSVPs();
-        });
-
+        exportBtn?.addEventListener("click", exportCSV);
+        clearBtn?.addEventListener("click", clearEntries);
         window.addEventListener("DOMContentLoaded", loadRSVPs);
     </script>
+
 </body>
 </html>

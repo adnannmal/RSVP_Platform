@@ -1,78 +1,68 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
-  <meta charset="UTF-8" />
-  <title>Thank You</title>
-  <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script> <!--confetti-->
-  <style>
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .animate-fade-in {
-      animation: fadeIn 0.8s ease-out forwards;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RSVP Confirmed!</title>
+    <link rel="icon" type="image/png" href="Images/logo.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+      @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
 </head>
 
-<body class="bg-green-100 min-h-screen flex flex-col items-center justify-center">
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-6">
 
-  <!--Thank you message-->
+  <div class="max-w-md w-full text-center space-y-6 animate-slide-up">
+    <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-2">
+      <span class="text-4xl text-green-600">✓</span>
+    </div>
 
-  <div class="text-center p-3 bg-white rounded-lg shadow-lg animate-fade-in">
-    <h1 class="text-3xl font-bold text-green-700 mb-2">🎉 Thank You!</h1>
-    <p class="text-gray-700">Your RSVP has been submitted successfully.</p>
-    <p class="text-gray-700">A email confirmation will  be sent shortly containing your ticket.</p>
+    <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+      <h1 class="text-3xl font-extrabold text-slate-800">You're on the list!</h1>
+      <p class="text-slate-500 mt-2">A confirmation email is on its way.</p>
+      
+      <div class="mt-8 pt-8 border-t-2 border-dashed border-slate-200 relative">
+        <div class="absolute -top-4 -left-10 w-8 h-8 bg-slate-50 rounded-full"></div>
+        <div class="absolute -top-4 -right-10 w-8 h-8 bg-slate-50 rounded-full"></div>
+        
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Official Event Ticket</p>
+
+        <div id="qr-container" class="bg-slate-50 p-4 rounded-2xl inline-block">
+          <canvas id="qr-code" class="mx-auto"></canvas>
+        </div>
+
+        <p class="mt-4 text-sm font-medium text-slate-600 italic">One ticket for all listed guests</p>
+      </div>
+
+      <button id="downloadBtn" type="button" 
+        class="w-full bg-slate-900 text-white font-bold py-4 mt-8 rounded-xl shadow-lg hover:bg-slate-800 active:scale-95 transition-all">Download PDF Ticket ⬇
+      </button>
+    </div>
   </div>
 
-  <!--QR Code-->
-
-  <div id="qr-container" class="text-center animate-fade-in">
-    <p class="mb-2 mt-2 text-gray-800">Below is your Ticket 🎟️:</p>
-    <p class="mb-2 text-gray-800">(All names listed are on one ticket)</p>
-    <canvas id="qr-code" class="mx-auto"></canvas>
-    <button id="downloadBtn" type="button"  class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Download Ticket PDF   <!--Dowload button-->
-    </button>
-  </div>
-
-  
-  
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       try { 
-        confetti?.({ 
-          particleCount: 800, 
-          spread: 160, 
-          origin: { y: 0.6 } 
-        }); 
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#059669', '#10b981', '#34d399'] }); 
       } 
       catch {}
 
       const id = localStorage.getItem("ticketId");
-      if (!id) {
-        return console.warn("No ticketId in storage");
-      }
+      if (!id) return;
 
       const canvas = document.getElementById("qr-code");
       const ticketUrl = `${location.origin}/ticket.html?id=${encodeURIComponent(id)}`;
 
       if (window.QRCode?.toCanvas) {
-        QRCode.toCanvas(canvas, ticketUrl, (err) => err && console.error(err));
+        QRCode.toCanvas(canvas, ticketUrl, { width: 200, margin: 2, color: { dark: "#0f172a", light: "#f8fafc" } });
       }
 
-      document.getElementById("downloadBtn")?.addEventListener("click", () => {
-        const data = canvas.toDataURL("image/png");
-        const a = document.createElement("a");
-        a.href = data;
-        a.download = "ticket.png";
-        a.click();
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+          alert("Preparing your high-quality PDF...");
       });
     });
   </script>

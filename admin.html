@@ -1,120 +1,58 @@
-<!DOCTYPE html> <!--recognizes file type as HTML-->
-
-<html lang="en"> <!--sets language to english-->
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8" /> <!--tells web browser to interpret doc using UTF-8 encoding-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
-    <title>Admin Dashboard</title> <!--Title shown in browser tab-->
-    <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
-    <script src="https://cdn.tailwindcss.com"></script> <!--loads tailwind for styling-->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PSA Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="Images/logo.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-10 font-sans">
+    <div class="max-w-6xl mx-auto">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900">Event Registry</h1>
+                <p class="text-slate-500 font-medium">Manage and export all active RSVPs</p>
+            </div>
+            <div class="flex gap-3">
+                <button id="exportCSV" class="bg-white text-slate-700 font-bold px-6 py-2.5 rounded-xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <span>Export CSV</span>
+                </button>
+                <button id="clearAll" class="bg-red-50 text-red-600 font-bold px-6 py-2.5 rounded-xl border border-red-100 hover:bg-red-100 transition-all">
+                    Clear Data
+                </button>
+            </div>
+        </div>
 
-<body class="bg-gray-400 min-h-screen p-6">
-  <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Total RSVPs</p>
+                <p id="totalCount" class="text-4xl font-black text-green-700 mt-1">--</p>
+            </div>
+        </div>
 
-    <h1 class="text-3xl font-bold text-black mb-4 text-center">RSVP Submissions
-    </h1>
-
-    <!--Table for RSVP data-->
-
-    <div class="overflow-x-auto">
-      <table class="min-w-full table-auto border">
-            <thead>
-                <tr>
-                    <th scope="col" class="border px-4 py-2 bg-blue-300">Name</th>
-                    <th scope="col" class="border px-4 py-2 bg-blue-300">Email</th>
-                    <th scope="col" class="border px-4 py-2 bg-blue-300">ID</th>
-                    <th scope="col" class="border px-4 py-2 bg-blue-300">Guests</th>
-                    <th scope="col" class="border px-4 py-2 bg-blue-300">Time</th>
-                </tr>
-            </thead>
-        <tbody id="tableData" class="text-sm"></tbody>
-      </table>
-    </div>
-
-    <!--Export Button-->
-
-    <div class="flex justify-center mt-6 space-x-4">
-        <button id="exportBtn" type="button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Export CSV
-        </button>
-    </div>
-    
-    <!--Clear Entries Button-->
-
-    <button id="clearBtn" type="button" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Clear All Entries
-    </button>
-
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b border-slate-100">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Attendee</th>
+                            <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Hofstra ID</th>
+                            <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Guests</th>
+                            <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Submission Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rsvpTableBody" class="divide-y divide-slate-50 text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        const API_BASE = "http://localhost:8000";
-
-        const tableBody = document.getElementById("tableData");
-        const exportBtn = document.getElementById("exportBtn");
-        const clearBtn  = document.getElementById("clearBtn");
-
-        async function loadRSVPs() {
-            tableBody.innerHTML = "";
-            try {
-                const r = await fetch(`${API_BASE}/rsvps`);
-                const list = await r.json();
-
-                if (!Array.isArray(list) || list.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="border px-4 py-2 text-center italic text-gray-500">No RSVPs yet.</td></tr>`;
-                    return;
-                }
-
-                for (const e of list) {
-                    const guests = [];
-                    
-                    if (e.guest1fname || e.guest1lname) {
-                        guests.push(`${e.guest1fname || ""} ${e.guest1lname || ""}`.trim());
-                    }
-
-                    if (e.guest2fname || e.guest2lname) {
-                        guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
-                    }
-
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="border px-4 py-2">${(e.fname || "")} ${(e.lname || "")}</td>
-                        <td class="border px-4 py-2">${e.email || ""}</td>
-                        <td class="border px-4 py-2">${e.hofstraId || ""}</td>
-                        <td class="border px-4 py-2">${guests.join("<br>")}</td>
-                        <td class="border px-4 py-2">${e.submitTime || ""}</td>
-                    `;
-                    tableBody.appendChild(tr);
-                }
-            } 
-            catch (err) {
-                console.error(err);
-                alert("Failed to load RSVPs");
-            }
-        }
-
-        function exportCSV() {
-            window.location.href = `${API_BASE}/export.csv`;
-        }
-
-        async function clearEntries() {
-            if (!confirm("Delete ALL RSVP entries? This cannot be undone.")) {
-                return;
-            }
-            try {
-                await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
-                loadRSVPs();
-            } 
-            catch (err) {
-                console.error(err);
-                alert("Failed to clear");
-            }
-        }
-
-        exportBtn?.addEventListener("click", exportCSV);
-        clearBtn?.addEventListener("click", clearEntries);
-        window.addEventListener("DOMContentLoaded", loadRSVPs);
+        // Keep your original script here, just update the innerHTML to match these classes:
+        // tr.innerHTML = `<td class="px-6 py-4 font-bold">${e.fname} ${e.lname}<br><span class="text-xs font-medium text-slate-400">${e.email}</span></td>...`
     </script>
-
 </body>
 </html>

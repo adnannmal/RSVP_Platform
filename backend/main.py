@@ -24,7 +24,7 @@ app.add_middleware(
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 ADMIN_PIN  = os.getenv("ADMIN_PIN", "123456")   # Change via env var
 
-client = AsyncIOMotorClient(MONGO_URI)
+client = AsyncIOMotorClient(MONGO_URI, tls=True, tlsAllowInvalidCertificates=True)
 db     = client["rsvp_db"]
 col    = db["rsvps"]
 

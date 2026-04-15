@@ -50,9 +50,70 @@
         </div>
     </div>
 
-    <script>
-        // Keep your original script here, just update the innerHTML to match these classes:
-        // tr.innerHTML = `<td class="px-6 py-4 font-bold">${e.fname} ${e.lname}<br><span class="text-xs font-medium text-slate-400">${e.email}</span></td>...`
-    </script>
+<script>
+    const API_BASE = "https://rsvp-backend-2ycz.onrender.com"; // Server PORT     
+    const tableBody = document.getElementById("rsvpTableBody");
+    const exportBtn = document.getElementById("exportCSV");
+    const clearBtn  = document.getElementById("clearAll");
+
+    async function loadRSVPs() {
+        tableBody.innerHTML = "";
+        try {
+            const r = await fetch(`${API_BASE}/rsvps`);
+            const list = await r.json();
+
+            if (!Array.isArray(list) || list.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="border px-4 py-2 text-center italic text-gray-500">No RSVPs yet.</td></tr>`;
+                return;
+            }
+
+                for (const e of list) {
+                    const guests = [];
+                    
+                if (e.guest1fname || e.guest1lname) {
+                    guests.push(`${e.guest1fname || ""} ${e.guest1lname || ""}`.trim());
+                }
+
+                if (e.guest2fname || e.guest2lname) {
+                    guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
+                }
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="border px-4 py-2">${(e.fname || "")} ${(e.lname || "")}</td>
+                    <td class="border px-4 py-2">${e.email || ""}</td>
+                    <td class="border px-4 py-2">${e.hofstraId || ""}</td>
+                    <td class="border px-4 py-2">${guests.join("<br>")}</td>
+                    <td class="border px-4 py-2">${e.submitTime || ""}</td>
+                `;
+                tableBody.appendChild(tr);
+            }
+        } 
+        catch (err) {
+            console.error(err);
+            alert("Failed to load RSVPs");
+        }
+    }
+    function exportCSV() {
+        window.location.href = `${API_BASE}/export.csv`;
+    }
+
+    async function clearEntries() {
+        if (!confirm("Delete ALL RSVP entries? This cannot be undone.")) {
+            return;
+        }
+        try {
+            await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
+            loadRSVPs();
+        } 
+        catch (err) {
+            console.error(err);
+            alert("Failed to clear");
+        }
+    }
+    exportBtn?.addEventListener("click", exportCSV);
+    clearBtn?.addEventListener("click", clearEntries);
+    window.addEventListener("DOMContentLoaded", loadRSVPs);
+</script>
 </body>
 </html>

@@ -15,9 +15,14 @@ app = FastAPI(title="PSA RSVP Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # Tighten to your Vercel domain in production
+    allow_origins=[
+        "https://psa-rsvp.vercel.app",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
 # ── MongoDB ────────────────────────────────────────────────────────────────────

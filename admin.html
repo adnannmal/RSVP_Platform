@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,21 +27,24 @@
             }
         }
     </script>
+
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
         .animate-fade-in {
             animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-emerald-900 via-pakistan-dark to-emerald-800 min-h-screen p-4 md:p-10 font-sans text-slate-100 relative overflow-x-hidden select-none">
-    
+<body class="bg-gradient-to-b from-emerald-800 via-pakistan-dark to-emerald-900 min-h-screen p-4 md:p-10 font-sans text-slate-100 relative overflow-x-hidden select-none">
     <div class="max-w-6xl mx-auto relative z-10 animate-fade-in">
         
+        <!-- Dashboard Header -->
+
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-white/10 pb-6">
             <div>
                 <h1 class="text-4xl font-black text-white tracking-tight">Admin Dashboard</h1>
@@ -55,14 +60,18 @@
             </div>
         </div>
 
+        <!-- RSVP Summary and Table -->
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-pakistan">
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4">
                 <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Total RSVPs</p>
                 <p id="totalCount" class="text-4xl font-black text-emerald-900 mt-1">0</p>
             </div>
         </div>
 
-        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border-t-4 border-pakistan">
+        <!-- RSVP Table -->
+
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border-t-4">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-emerald-50/70 border-b border-emerald-100">
@@ -87,7 +96,7 @@
     const exportBtn = document.getElementById("exportCSV");
     const clearBtn  = document.getElementById("clearAll");
 
-    async function loadRSVPs() {
+    async function loadRSVPs() { // Fetch and display RSVPs in the table
         tableBody.innerHTML = "";
         try {
             const r = await fetch(`${API_BASE}/rsvps`);
@@ -104,7 +113,7 @@
                 return;
             }
 
-            for (const e of list) {
+            for (const e of list) { // Build table rows for each RSVP entry
                 const guests = [];
                 
                 if (e.guest1fname || e.guest1lname) {

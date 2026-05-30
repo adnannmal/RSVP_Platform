@@ -123,9 +123,9 @@
       if (window.JsBarcode) {
         JsBarcode("#barcode", id, {
           format: "CODE128",       // standard high-density alpha-numeric barcode architecture
-          width: 2.2,              // line width scaling profiles
-          height: 85,              // barcode line vertical structural size
-          displayValue: true,      // leaves verification text visible underneath code matrix
+          width: 4.2,              // line width scaling profiles
+          height: 95,              // barcode line vertical structural size
+          displayValue: false,      // leaves verification text visible underneath code matrix
           text: `TICKET: ${id}`,   // appends tracking label styling text helper
           font: "monospace",       // clean matching font style
           fontSize: 15,

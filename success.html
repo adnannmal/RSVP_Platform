@@ -62,7 +62,20 @@
       }
 
       document.getElementById("downloadBtn").addEventListener("click", () => {
-          alert("Preparing your high-quality PDF...");
+        alert("Preparing your high-quality PDF...");
+          fetch(`${location.origin}/generate-pdf?id=${encodeURIComponent(id)}`)
+            .then(response => response.blob())
+            .then(blob => {
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `PSA_Event_Ticket_${id}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            })
+            .catch(() => alert("Sorry, there was an error generating your PDF. Please try again later."));
       });
     });
   </script>

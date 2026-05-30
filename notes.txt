@@ -1,15 +1,15 @@
 To do:
-- Find out if you can see different submissions instead of locally stored
 - Remove locally stored data and qr code when backend starts
 - Remove hardcoded PIN to ensure security so no one can get it through elements tab
+- fix download pdf button
+- fix total rsvps count and guests in admin dashboard
 
 BACKEND To do:
 - Send calender invites (.cs files) with confirmation email
-- Allow admin approval before sending tickets (status-based).
-- Use a secure backend to generate unique QR code tokens, not raw data.
+- Allow admin approval before sending tickets (status-based)
+- Use a secure backend to generate unique barcode,
 - Send calender invites (.cs files) with confirmation email
-- directly email qr code instead of displaying it on success page to increase security
-- check if email, and id have already been used  to prevent multiple submissions at once
+- check if email, and id have already been used to prevent multiple submissions at once
 
 Done:
 - Transition to new screen for successful submission

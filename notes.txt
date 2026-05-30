@@ -1,5 +1,4 @@
 To do:
-- fix download pdf button
 - design ticket pdf 
 - make sure you can see what is in barcode
 - add pin to admin dashboard at the end

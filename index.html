@@ -5,17 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PSA RSVP - Coming Soon</title>
     <link rel="icon" type="image/png" href="Images/logo.png" />
+    <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .animate-pulse-slow { animation: pulse-slow 3s infinite; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-    </style>
 </head>
+
 <body class="bg-slate-900 flex items-center justify-center min-h-screen p-6" 
     style="background-image: radial-gradient(circle at 50% 50%, #064e3b 0%, #0f172a 100%);">
 
@@ -37,44 +30,7 @@
             Days : Hours : Mins : Secs
         </div>
     </div>
-
-<script>
-    const title = document.getElementById("title");
-    const timer = document.getElementById("timer");
-    const countdown = document.getElementById("countdown");
-    const open = new Date();
-    localStorage.setItem("formUnlocked", "false");
-
-    open.setFullYear(2025, 6, 16); 
-    open.setHours(14); 
-    open.setMinutes(52); 
-    open.setSeconds(0);
-
-    if (localStorage.getItem("formUnlocked") === "true") {
-        window.location.href = "home.html";
-    }
-
-    const interval = setInterval(() => {
-    const now = new Date();
-    const timeLeft = open - now;
-
-    if (timeLeft <= 0) {
-        clearInterval(interval);
-        timer.innerText = "Redirecting...";
-        title.innerText = "Form Opened";
-        localStorage.setItem("formUnlocked", "true");
-        window.location.href = "home.html";
-        return;
-    }
-
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    timer.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
-    title.innerText = "RSVP Opening In";
-    }, 1000);
-    </script>
+    <script src="js/config.js"></script>
+    <script src="js/home.js" defer></script>
 </body>
 </html>

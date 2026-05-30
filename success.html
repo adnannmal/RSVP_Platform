@@ -5,52 +5,11 @@
 <head>   
   <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
-  <title>RSVP Confirmed!</title> <link rel="icon" type="image/png" href="Images/logo.png" /> 
+  <title>RSVP Confirmed!</title> 
+  <link rel="icon" type="image/png" href="Images/logo.png" /> 
+  <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
   <script src="https://cdn.tailwindcss.com"></script> <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script> 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-            colors: {
-              emerald: {
-                800: '#064e3b',
-                900: '#022c22',
-              },
-              pakistan: {
-              dark: '#004b23',
-              light: '#007200',
-              gold: '#d4af37'
-              }
-            }
-          }
-      }
-    }
-  </script>
-
-  <style>
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .animate-fade-in {
-      animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    /* Continuous mask that punches two transparent holes on the left and right edges of the ticket*/
-        
-    .ticket-cutout-mask {
-      mask-image: 
-      radial-gradient(circle at left 0px top 220px, transparent 20px, black 21px),
-      radial-gradient(circle at right 0px top 220px, transparent 20px, black 21px);
-      mask-composite: intersect;
-      -webkit-mask-image: 
-        radial-gradient(circle at left 0px top 326px, transparent 20px, black 21px),
-        radial-gradient(circle at right 0px top 326px, transparent 20px, black 21px);
-      -webkit-mask-composite: source-in;
-    }
-  </style>
 </head>
 
 <body class="bg-gradient-to-br from-emerald-900 via-pakistan-dark to-emerald-800 min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden select-none">
@@ -92,80 +51,7 @@
       </button>
       </div>
   </div>
-
-  <script>
-    const API_BASE = "https://rsvp-backend-5b7q.onrender.com";
-    document.addEventListener("DOMContentLoaded", () => {
-
-      // fires celebratory aesthetic elements upon window validation
-                
-      try { 
-        confetti({ 
-        particleCount: 160, 
-          spread: 80, 
-          origin: { y: 0.55 }, 
-          colors: ['#004b23', '#007200', '#d4af37', '#ffffff'] 
-        }); 
-      } 
-      catch (err) {
-        console.error("Confetti framework failed initialized stream: ", err);
-      }
-
-      // check confirmation identifier verification arrays
-                
-      const id = localStorage.getItem("ticketId");
-      if (!id) {
-        console.warn("No active secure authorization transaction ID discovered in storage arrays.");
-        return;
-      }
-
-      // builds a clean linear barcode string map using the backend confirmation tracking id
-      
-      if (window.JsBarcode) {
-        JsBarcode("#barcode", id, {
-          format: "CODE128",       // standard high-density alpha-numeric barcode architecture
-          width: 4.2,              // line width scaling profiles
-          height: 95,              // barcode line vertical structural size
-          displayValue: false,      // leaves verification text visible underneath code matrix
-          text: `TICKET: ${id}`,   // appends tracking label styling text helper
-          font: "monospace",       // clean matching font style
-          fontSize: 15,
-          fontOptions: "bold",
-          lineColor: "#022c22",    // maps deep emerald green structure
-          background: "transparent"
-        });
-      }
-
-      // tracks high-quality programmatic document synthesis operations
-        
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        alert("Preparing your high-quality PDF...");
-        fetch(`${API_BASE}/generate-pdf?id=${encodeURIComponent(id)}`)
-
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("Server transmission error encountered.");
-          }
-          return response.blob();
-        })
-                        
-        .then(blob => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `PSA_Event_Ticket_${id}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-        })
-                      
-        .catch((err) => {
-          console.error(err);
-          alert("Sorry, there was an error generating your PDF. Please try again later.");
-        });
-      });
-    });
-  </script>
+  <script src="js/config.js"></script>
+  <script src="js/success.js" defer></script>
 </body>
 </html>

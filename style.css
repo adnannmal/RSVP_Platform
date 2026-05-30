@@ -1,0 +1,48 @@
+/* fadeIn animation for success message */
+
+@keyframes fadeIn { 
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Ticket cutout mask for the success page */
+
+.ticket-cutout-mask {
+  mask-image:
+    radial-gradient(circle at left 0px top 220px, transparent 20px, black 21px),
+    radial-gradient(circle at right 0px top 220px, transparent 20px, black 21px);
+  mask-composite: intersect;
+
+  -webkit-mask-image:
+    radial-gradient(circle at left 0px top 326px, transparent 20px, black 21px),
+    radial-gradient(circle at right 0px top 326px, transparent 20px, black 21px);
+  -webkit-mask-composite: source-in;
+}
+
+/* Slow pulse animation for the "Download Ticket" button */
+
+@keyframes pulse-slow { 
+    0%, 100% { opacity: 1; } 50% { opacity: 0.7; } 
+}
+
+.animate-pulse-slow { 
+    animation: 
+    pulse-slow 3s infinite; 
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}

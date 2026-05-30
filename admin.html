@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PSA Admin Dashboard</title>
     <link rel="icon" type="image/png" href="Images/logo.png" />
+    <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -27,17 +28,6 @@
             }
         }
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-    </style>
 </head>
 
 <body class="bg-emerald-800 min-h-screen p-4 md:p-10 font-sans text-slate-100 relative overflow-x-hidden select-none">
@@ -88,89 +78,7 @@
             </div>
         </div>
     </div>
-
-<script>
-    const API_BASE = "https://rsvp-backend-5b7q.onrender.com";     
-    const tableBody = document.getElementById("rsvpTableBody");
-    const totalCountEl = document.getElementById("totalCount");
-    const exportBtn = document.getElementById("exportCSV");
-    const clearBtn  = document.getElementById("clearAll");
-
-    async function loadRSVPs() { // Fetch and display RSVPs in the table
-        tableBody.innerHTML = "";
-        try {
-            const r = await fetch(`${API_BASE}/rsvps`);
-            const list = await r.json();
-
-            if (Array.isArray(list)) {
-                totalCountEl.textContent = list.length;
-            } else {
-                totalCountEl.textContent = "0";
-            }
-
-            if (!Array.isArray(list) || list.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center italic text-gray-400">No RSVPs yet.</td></tr>`;
-                return;
-            }
-
-            for (const e of list) { // Build table rows for each RSVP entry
-                const guests = [];
-                
-                if (e.guest1fname || e.guest1lname) {
-                    guests.push(`${e.guest1fname || ""} ${e.guest1lname || ""}`.trim());
-                }
-
-                if (e.guest2fname || e.guest2lname) {
-                    guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
-                }
-
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-emerald-50/30 transition-colors duration-200";
-                
-                tr.innerHTML = `
-                    <td class="px-6 py-4">
-                        <div class="font-black text-emerald-900 text-lg">${(e.fname || "")} ${(e.lname || "")}</div>
-                        <div class="text-xs text-gray-400 font-medium">${e.email || ""}</div>
-                    </td>
-                    <td class="px-6 py-4 font-mono text-base font-bold text-gray-600">${e.hofstraId || "N/A"}</td>
-                    <td class="px-6 py-4">
-                        ${guests.length > 0 
-                            ? `<div class="flex flex-col gap-1.5">${guests.map(g => `<span class="bg-emerald-50 border border-emerald-100 text-emerald-900 px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wide w-max shadow-sm">${g}</span>`).join("")}</div>` 
-                            : `<span class="text-gray-400 italic text-sm">None</span>`
-                        }
-                    </td>
-                    <td class="px-6 py-4 text-sm font-bold text-gray-500">${e.submitTime ? new Date(e.submitTime).toLocaleString() : "N/A"}</td>
-                `;
-                tableBody.appendChild(tr);
-            }
-        } 
-        catch (err) {
-            console.error(err);
-            alert("Failed to load RSVPs");
-        }
-    }
-
-    function exportCSV() {
-        window.location.href = `${API_BASE}/export.csv`;
-    }
-
-    async function clearEntries() {
-        if (!confirm("Delete ALL RSVP entries? This cannot be undone.")) {
-            return;
-        }
-        try {
-            await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
-            loadRSVPs();
-        } 
-        catch (err) {
-            console.error(err);
-            alert("Failed to clear");
-        }
-    }
-
-    exportBtn?.addEventListener("click", exportCSV);
-    clearBtn?.addEventListener("click", clearEntries);
-    window.addEventListener("DOMContentLoaded", loadRSVPs);
-</script>
+    <script src="js/config.js"></script>
+    <script src="js/admin.js" defer></script>
 </body>
 </html>

@@ -9,18 +9,9 @@
   <meta charset="UTF-8" />
   <title>Ticket</title>
   <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
+  <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
-  <style>
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .animate-fade-in {
-      animation: fadeIn 0.8s ease-out forwards;
-    }
-  </style>
 </head>
 
 <body class="bg-blue-300 min-h-screen flex flex-col items-center justify-center">
@@ -50,88 +41,7 @@
     <!-- Ticket information display (initially hidden) -->
 
     <div id="ticket" class="hidden mt-4 p-6 bg-white rounded shadow max-w-md w-full"></div>
-
-    <script>
-        const API_BASE = "https://rsvp-backend-5b7q.onrender.com"; // Server PORT
-
-        const params = new URLSearchParams(location.search);
-        const id = params.get("id");
-
-        let ticket = null;
-
-        async function fetchTicket() {
-            if (!id) {
-                throw new Error("Missing ticket id");
-            }
-
-            const r = await fetch(`${API_BASE}/ticket/${encodeURIComponent(id)}`);
-            const j = await r.json();
-
-            if (!j.ok) {
-                throw new Error(j.error || "Ticket error");
-            }
-
-            ticket = j.ticket;
-        }
-
-        async function verifyPin(pin) {
-            const r = await fetch(`${API_BASE}/verify-pin`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ pin: String(pin || "") })
-            });
-
-            const j = await r.json();
-            return !!j.ok;
-        }
-
-        function renderTicket() {
-            const wrap = document.getElementById("ticket");
-            const guests = [];
-
-            if (ticket.guest1fname || ticket.guest1lname) {
-                guests.push(`${ticket.guest1fname || ""} ${ticket.guest1lname || ""}`.trim());
-            }
-
-            if (ticket.guest2fname || ticket.guest2lname) {
-                guests.push(`${ticket.guest2fname || ""} ${ticket.guest2lname || ""}`.trim());
-            }
-
-            wrap.innerHTML = `
-                <div class="space-y-3 text-left">
-                <h2 class="text-2xl font-bold text-green-700 mb-2">🎟️ Event Ticket</h2>
-                <p><strong>Name:</strong> ${ticket.fname || ""} ${ticket.lname || ""}</p>
-                ${ticket.hofstraId ? `<p><strong>ID:</strong> ${ticket.hofstraId}</p>` : ""}
-                ${guests.length ? `<div><p class="font-semibold">Guests:</p><ul class="list-disc list-inside text-gray-700">${guests.map(g=>`<li>${g}</li>`).join("")}</ul></div>` : ""}
-                ${ticket.submitTime ? `<p class="text-sm text-gray-500">Submitted: ${ticket.submitTime}</p>` : ""}
-                <p class="text-xs text-gray-400">Ticket ID: ${ticket.id}</p>
-                </div>
-            `;
-            wrap.classList.remove("hidden");
-        }
-
-        document.getElementById("submitPin")?.addEventListener("click", async () => {
-            const val = document.getElementById("pass").value.trim();
-            const ok = await verifyPin(val);
-            
-            if (!ok) {
-                document.getElementById("error").classList.remove("hidden");
-                return;
-            }
-
-            document.getElementById("authUser").classList.add("hidden");
-            renderTicket();
-        });
-
-        (async () => {
-            try { 
-                await fetchTicket(); 
-            }
-            catch (e) {
-                console.error(e);
-                document.body.innerHTML = `<p class="text-red-700 text-center font-bold">❌ ${e.message}</p>`;
-            }
-        })();
-    </script>
+    <script src="js/config.js"></script>
+    <script src="js/ticket.js" defer></script>    
 </body>
 </html>

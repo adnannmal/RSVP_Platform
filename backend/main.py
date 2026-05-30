@@ -200,70 +200,150 @@ async def generate_pdf(id: str):
     pdf = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
+    # Colors
+    emerald_dark = "#064e3b"
+    emerald_deep = "#022c22"
+    gold = "#d4af37"
+    light_green = "#ecfdf5"
+    gray = "#4b5563"
+    light_gray = "#e5e7eb"
+
+    # Data
+    ticket_id = str(doc["_id"])
     full_name = f"{doc.get('fname', '')} {doc.get('lname', '')}".strip()
-    hofstra_id = doc.get("hofstraId", "")
     email = doc.get("email", "")
+    hofstra_id = doc.get("hofstraId", "")
     submit_time = doc.get("submitTime", "")
 
     guest1 = f"{doc.get('guest1fname', '')} {doc.get('guest1lname', '')}".strip()
     guest2 = f"{doc.get('guest2fname', '')} {doc.get('guest2lname', '')}".strip()
+    guests = [g for g in [guest1, guest2] if g]
 
     pdf.setTitle("PSA Event Ticket")
 
-    pdf.setFont("Helvetica-Bold", 24)
-    pdf.drawCentredString(width / 2, height - 1.2 * inch, "PSA Event Ticket")
+    # Page background
+    pdf.setFillColor(emerald_deep)
+    pdf.rect(0, 0, width, height, fill=True, stroke=False)
 
-    pdf.setFont("Helvetica", 13)
-    pdf.drawCentredString(width / 2, height - 1.55 * inch, "Hofstra Pakistani Students Association")
+    # Main ticket card
+    card_x = 0.75 * inch
+    card_y = 1.0 * inch
+    card_w = width - 1.5 * inch
+    card_h = height - 2.0 * inch
 
-    pdf.line(1 * inch, height - 1.85 * inch, width - 1 * inch, height - 1.85 * inch)
+    pdf.setFillColor("white")
+    pdf.roundRect(card_x, card_y, card_w, card_h, 18, fill=True, stroke=False)
 
-    y = height - 2.4 * inch
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(1 * inch, y, "Ticket ID:")
-    pdf.setFont("Helvetica", 13)
-    pdf.drawString(2.2 * inch, y, str(doc["_id"]))
+    # Gold top strip
+    pdf.setFillColor(gold)
+    pdf.roundRect(card_x, card_y + card_h - 0.18 * inch, card_w, 0.18 * inch, 10, fill=True, stroke=False)
 
-    y -= 0.35 * inch
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(1 * inch, y, "Name:")
-    pdf.setFont("Helvetica", 13)
-    pdf.drawString(2.2 * inch, y, full_name)
+    # Header
+    pdf.setFillColor(emerald_dark)
+    pdf.setFont("Helvetica-Bold", 28)
+    pdf.drawCentredString(width / 2, card_y + card_h - 0.75 * inch, "PSA EVENT TICKET")
 
-    y -= 0.35 * inch
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(1 * inch, y, "Email:")
-    pdf.setFont("Helvetica", 13)
-    pdf.drawString(2.2 * inch, y, email)
+    pdf.setFillColor(gold)
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawCentredString(width / 2, card_y + card_h - 1.05 * inch, "HOFSTRA PAKISTANI STUDENTS ASSOCIATION")
 
-    y -= 0.35 * inch
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(1 * inch, y, "Hofstra ID:")
-    pdf.setFont("Helvetica", 13)
-    pdf.drawString(2.2 * inch, y, hofstra_id)
+    # Divider
+    pdf.setStrokeColor(light_gray)
+    pdf.setLineWidth(1)
+    pdf.line(card_x + 0.45 * inch, card_y + card_h - 1.35 * inch, card_x + card_w - 0.45 * inch, card_y + card_h - 1.35 * inch)
 
-    y -= 0.35 * inch
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(1 * inch, y, "Guests:")
-    pdf.setFont("Helvetica", 13)
+    # Confirmation badge
+    badge_x = card_x + 0.55 * inch
+    badge_y = card_y + card_h - 2.05 * inch
 
-    guests = [g for g in [guest1, guest2] if g]
-    pdf.drawString(2.2 * inch, y, ", ".join(guests) if guests else "N/A")
+    pdf.setFillColor(light_green)
+    pdf.roundRect(badge_x, badge_y, card_w - 1.1 * inch, 0.5 * inch, 12, fill=True, stroke=False)
 
-    y -= 0.35 * inch
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(1 * inch, y, "Submitted:")
-    pdf.setFont("Helvetica", 13)
-    pdf.drawString(2.2 * inch, y, submit_time)
-
-    y -= 0.8 * inch
+    pdf.setFillColor(emerald_dark)
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(1 * inch, y, "Barcode / Ticket Code:")
-    pdf.setFont("Courier-Bold", 16)
-    pdf.drawString(1 * inch, y - 0.35 * inch, str(doc["_id"]))
+    pdf.drawString(badge_x + 0.25 * inch, badge_y + 0.18 * inch, "✓ RSVP Confirmed")
 
+    # Ticket details section
+    y = card_y + card_h - 2.75 * inch
+    label_x = card_x + 0.65 * inch
+    value_x = card_x + 2.15 * inch
+
+    def draw_field(label, value):
+        nonlocal y
+        pdf.setFillColor(gray)
+        pdf.setFont("Helvetica-Bold", 11)
+        pdf.drawString(label_x, y, label.upper())
+
+        pdf.setFillColor(emerald_deep)
+        pdf.setFont("Helvetica", 12)
+        pdf.drawString(value_x, y, value if value else "N/A")
+
+        y -= 0.42 * inch
+
+    draw_field("Name", full_name)
+    draw_field("Email", email)
+    draw_field("Hofstra ID", hofstra_id)
+    draw_field("Submitted", submit_time)
+
+    pdf.setFillColor(gray)
+    pdf.setFont("Helvetica-Bold", 11)
+    pdf.drawString(label_x, y, "GUESTS")
+
+    pdf.setFillColor(emerald_deep)
+    pdf.setFont("Helvetica", 12)
+
+    if guests:
+        pdf.drawString(value_x, y, guests[0])
+        y -= 0.32 * inch
+        if len(guests) > 1:
+            pdf.drawString(value_x, y, guests[1])
+            y -= 0.32 * inch
+    else:
+        pdf.drawString(value_x, y, "N/A")
+        y -= 0.42 * inch
+
+    # Dashed divider
+    y -= 0.25 * inch
+    pdf.setDash(4, 4)
+    pdf.setStrokeColor(light_gray)
+    pdf.line(card_x + 0.45 * inch, y, card_x + card_w - 0.45 * inch, y)
+    pdf.setDash()
+
+    # Barcode / Ticket code area
+    y -= 0.55 * inch
+    pdf.setFillColor(gray)
+    pdf.setFont("Helvetica-Bold", 11)
+    pdf.drawCentredString(width / 2, y, "TICKET VERIFICATION CODE")
+
+    y -= 0.45 * inch
+    pdf.setFillColor(emerald_deep)
+    pdf.setFont("Courier-Bold", 16)
+    pdf.drawCentredString(width / 2, y, ticket_id)
+
+    # Simple barcode-style visual
+    y -= 0.65 * inch
+    barcode_x = card_x + 1.0 * inch
+    barcode_y = y
+    bar_height = 0.55 * inch
+
+    pdf.setFillColor(emerald_deep)
+
+    x = barcode_x
+    pattern = [2, 1, 3, 1, 1, 2, 4, 1, 2, 3, 1, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 2, 4, 1]
+
+    for i, bar_width in enumerate(pattern * 3):
+        if i % 2 == 0:
+            pdf.rect(x, barcode_y, bar_width, bar_height, fill=True, stroke=False)
+        x += bar_width + 2
+
+    # Footer note
+    pdf.setFillColor(gray)
     pdf.setFont("Helvetica-Oblique", 10)
-    pdf.drawString(1 * inch, 0.8 * inch, "One ticket is valid for the listed attendee and guests.")
+    pdf.drawCentredString(width / 2, card_y + 0.55 * inch, "One ticket is valid for the listed attendee and guests.")
+
+    pdf.setFillColor(gold)
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawCentredString(width / 2, card_y + 0.32 * inch, "Please present this ticket at check-in.")
 
     pdf.showPage()
     pdf.save()

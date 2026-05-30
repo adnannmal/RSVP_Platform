@@ -4,6 +4,11 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr, field_validator
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+
 from datetime import datetime, timezone
 import os
 import csv
@@ -177,4 +182,98 @@ async def export_csv():
         iter([output.getvalue()]),
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+# ── Generate PDF Ticket ─────────────────────────────────────────────────────────
+@app.get("/generate-pdf")
+async def generate_pdf(id: str):
+    try:
+        oid = ObjectId(id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ticket ID format.")
+
+    doc = await col.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Ticket not found.")
+
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    full_name = f"{doc.get('fname', '')} {doc.get('lname', '')}".strip()
+    hofstra_id = doc.get("hofstraId", "")
+    email = doc.get("email", "")
+    submit_time = doc.get("submitTime", "")
+
+    guest1 = f"{doc.get('guest1fname', '')} {doc.get('guest1lname', '')}".strip()
+    guest2 = f"{doc.get('guest2fname', '')} {doc.get('guest2lname', '')}".strip()
+
+    pdf.setTitle("PSA Event Ticket")
+
+    pdf.setFont("Helvetica-Bold", 24)
+    pdf.drawCentredString(width / 2, height - 1.2 * inch, "PSA Event Ticket")
+
+    pdf.setFont("Helvetica", 13)
+    pdf.drawCentredString(width / 2, height - 1.55 * inch, "Hofstra Pakistani Students Association")
+
+    pdf.line(1 * inch, height - 1.85 * inch, width - 1 * inch, height - 1.85 * inch)
+
+    y = height - 2.4 * inch
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(1 * inch, y, "Ticket ID:")
+    pdf.setFont("Helvetica", 13)
+    pdf.drawString(2.2 * inch, y, str(doc["_id"]))
+
+    y -= 0.35 * inch
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(1 * inch, y, "Name:")
+    pdf.setFont("Helvetica", 13)
+    pdf.drawString(2.2 * inch, y, full_name)
+
+    y -= 0.35 * inch
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(1 * inch, y, "Email:")
+    pdf.setFont("Helvetica", 13)
+    pdf.drawString(2.2 * inch, y, email)
+
+    y -= 0.35 * inch
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(1 * inch, y, "Hofstra ID:")
+    pdf.setFont("Helvetica", 13)
+    pdf.drawString(2.2 * inch, y, hofstra_id)
+
+    y -= 0.35 * inch
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(1 * inch, y, "Guests:")
+    pdf.setFont("Helvetica", 13)
+
+    guests = [g for g in [guest1, guest2] if g]
+    pdf.drawString(2.2 * inch, y, ", ".join(guests) if guests else "N/A")
+
+    y -= 0.35 * inch
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(1 * inch, y, "Submitted:")
+    pdf.setFont("Helvetica", 13)
+    pdf.drawString(2.2 * inch, y, submit_time)
+
+    y -= 0.8 * inch
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(1 * inch, y, "Barcode / Ticket Code:")
+    pdf.setFont("Courier-Bold", 16)
+    pdf.drawString(1 * inch, y - 0.35 * inch, str(doc["_id"]))
+
+    pdf.setFont("Helvetica-Oblique", 10)
+    pdf.drawString(1 * inch, 0.8 * inch, "One ticket is valid for the listed attendee and guests.")
+
+    pdf.showPage()
+    pdf.save()
+
+    buffer.seek(0)
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="PSA_Event_Ticket_{id}.pdf"'
+        },
     )

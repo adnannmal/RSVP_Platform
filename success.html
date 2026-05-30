@@ -94,6 +94,7 @@
   </div>
 
   <script>
+    const API_BASE = "https://rsvp-backend-5b7q.onrender.com";
     document.addEventListener("DOMContentLoaded", () => {
 
       // fires celebratory aesthetic elements upon window validation
@@ -139,7 +140,7 @@
         
       document.getElementById("downloadBtn").addEventListener("click", () => {
         alert("Preparing your high-quality PDF...");
-        fetch(`${location.origin}/generate-pdf?id=${encodeURIComponent(id)}`)
+        fetch(`${API_BASE}/generate-pdf?id=${encodeURIComponent(id)}`)
 
         .then(response => {
           if (!response.ok) {

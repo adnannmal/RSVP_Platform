@@ -234,34 +234,45 @@ async def generate_pdf(id: str):
     pdf.setFillColor("white")
     pdf.roundRect(card_x, card_y, card_w, card_h, 18, fill=True, stroke=False)
 
-    # Gold top strip
-    pdf.setFillColor(gold)
-    pdf.roundRect(card_x, card_y + card_h - 0.18 * inch, card_w, 0.18 * inch, 10, fill=True, stroke=False)
-
     # Header
     pdf.setFillColor(emerald_dark)
     pdf.setFont("Helvetica-Bold", 28)
-    pdf.drawCentredString(width / 2, card_y + card_h - 0.75 * inch, "PSA EVENT TICKET")
+    pdf.drawCentredString(
+        width / 2,
+        card_y + card_h - 0.75 * inch,
+        "PSA EVENT TICKET"
+    )
 
     pdf.setFillColor(gold)
     pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawCentredString(width / 2, card_y + card_h - 1.05 * inch, "HOFSTRA PAKISTANI STUDENTS ASSOCIATION")
+    pdf.drawCentredString(
+        width / 2,
+        card_y + card_h - 1.05 * inch,
+        "HOFSTRA PAKISTANI STUDENTS ASSOCIATION"
+    )
 
-    # Divider
+    # Divider under header
     pdf.setStrokeColor(light_gray)
     pdf.setLineWidth(1)
-    pdf.line(card_x + 0.45 * inch, card_y + card_h - 1.35 * inch, card_x + card_w - 0.45 * inch, card_y + card_h - 1.35 * inch)
+    pdf.line(
+        card_x + 0.45 * inch,
+        card_y + card_h - 1.35 * inch,
+        card_x + card_w - 0.45 * inch,
+        card_y + card_h - 1.35 * inch
+    )
 
-    # Confirmation badge
-    badge_x = card_x + 0.55 * inch
+    # Centered confirmation badge
+    badge_w = 2.6 * inch
+    badge_h = 0.5 * inch
+    badge_x = (width - badge_w) / 2
     badge_y = card_y + card_h - 2.05 * inch
 
     pdf.setFillColor(light_green)
-    pdf.roundRect(badge_x, badge_y, card_w - 1.1 * inch, 0.5 * inch, 12, fill=True, stroke=False)
+    pdf.roundRect(badge_x, badge_y, badge_w, badge_h, 12, fill=True, stroke=False)
 
     pdf.setFillColor(emerald_dark)
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(badge_x + 0.25 * inch, badge_y + 0.18 * inch, "✓ RSVP Confirmed")
+    pdf.drawCentredString(width / 2, badge_y + 0.18 * inch, "✓ RSVP Confirmed")
 
     # Ticket details section
     y = card_y + card_h - 2.75 * inch
@@ -270,6 +281,7 @@ async def generate_pdf(id: str):
 
     def draw_field(label, value):
         nonlocal y
+
         pdf.setFillColor(gray)
         pdf.setFont("Helvetica-Bold", 11)
         pdf.drawString(label_x, y, label.upper())
@@ -285,6 +297,7 @@ async def generate_pdf(id: str):
     draw_field("Hofstra ID", hofstra_id)
     draw_field("Submitted", submit_time)
 
+    # Guests
     pdf.setFillColor(gray)
     pdf.setFont("Helvetica-Bold", 11)
     pdf.drawString(label_x, y, "GUESTS")
@@ -295,6 +308,7 @@ async def generate_pdf(id: str):
     if guests:
         pdf.drawString(value_x, y, guests[0])
         y -= 0.32 * inch
+
         if len(guests) > 1:
             pdf.drawString(value_x, y, guests[1])
             y -= 0.32 * inch
@@ -306,10 +320,15 @@ async def generate_pdf(id: str):
     y -= 0.25 * inch
     pdf.setDash(4, 4)
     pdf.setStrokeColor(light_gray)
-    pdf.line(card_x + 0.45 * inch, y, card_x + card_w - 0.45 * inch, y)
+    pdf.line(
+        card_x + 0.45 * inch,
+        y,
+        card_x + card_w - 0.45 * inch,
+        y
+    )
     pdf.setDash()
 
-    # Barcode / Ticket code area
+    # Ticket verification code
     y -= 0.55 * inch
     pdf.setFillColor(gray)
     pdf.setFont("Helvetica-Bold", 11)
@@ -320,30 +339,47 @@ async def generate_pdf(id: str):
     pdf.setFont("Courier-Bold", 16)
     pdf.drawCentredString(width / 2, y, ticket_id)
 
-    # Simple barcode-style visual
+    # Centered barcode-style visual
     y -= 0.65 * inch
-    barcode_x = card_x + 1.0 * inch
     barcode_y = y
     bar_height = 0.55 * inch
 
     pdf.setFillColor(emerald_deep)
 
-    x = barcode_x
-    pattern = [2, 1, 3, 1, 1, 2, 4, 1, 2, 3, 1, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 2, 4, 1]
+    pattern = [
+        2, 1, 3, 1, 1, 2, 4, 1,
+        2, 3, 1, 1, 3, 2, 1, 4,
+        2, 1, 3, 1, 2, 2, 4, 1
+    ]
 
-    for i, bar_width in enumerate(pattern * 3):
+    bars = pattern * 3
+    total_barcode_width = sum(bars) + (len(bars) - 1) * 2
+    barcode_x = (width - total_barcode_width) / 2
+
+    x = barcode_x
+
+    for i, bar_width in enumerate(bars):
         if i % 2 == 0:
             pdf.rect(x, barcode_y, bar_width, bar_height, fill=True, stroke=False)
+
         x += bar_width + 2
 
     # Footer note
     pdf.setFillColor(gray)
     pdf.setFont("Helvetica-Oblique", 10)
-    pdf.drawCentredString(width / 2, card_y + 0.55 * inch, "One ticket is valid for the listed attendee and guests.")
+    pdf.drawCentredString(
+        width / 2,
+        card_y + 0.55 * inch,
+        "One ticket is valid for the listed attendee and guests."
+    )
 
     pdf.setFillColor(gold)
     pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawCentredString(width / 2, card_y + 0.32 * inch, "Please present this ticket at check-in.")
+    pdf.drawCentredString(
+        width / 2,
+        card_y + 0.32 * inch,
+        "Please present this ticket at check-in."
+    )
 
     pdf.showPage()
     pdf.save()

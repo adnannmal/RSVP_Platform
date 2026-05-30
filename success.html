@@ -1,81 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RSVP Confirmed!</title>
-    <link rel="icon" type="image/png" href="Images/logo.png" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-      @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-      .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    </style>
+<!DOCTYPE html> 
+
+<html lang="en"> 
+  
+<head>   
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <title>RSVP Confirmed!</title> <link rel="icon" type="image/png" href="Images/logo.png" /> 
+  <script src="https://cdn.tailwindcss.com"></script> <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script> 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+            colors: {
+              emerald: {
+                800: '#064e3b',
+                900: '#022c22',
+              },
+              pakistan: {
+              dark: '#004b23',
+              light: '#007200',
+              gold: '#d4af37'
+              }
+            }
+          }
+      }
+    }
+  </script>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Continuous mask that punches two transparent holes on the left and right edges of the ticket*/
+        
+    .ticket-cutout-mask {
+      mask-image: 
+      radial-gradient(circle at left 0px top 220px, transparent 20px, black 21px),
+      radial-gradient(circle at right 0px top 220px, transparent 20px, black 21px);
+      mask-composite: intersect;
+      -webkit-mask-image: 
+        radial-gradient(circle at left 0px top 326px, transparent 20px, black 21px),
+        radial-gradient(circle at right 0px top 326px, transparent 20px, black 21px);
+      -webkit-mask-composite: source-in;
+    }
+  </style>
 </head>
 
-<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-6">
+<body class="bg-gradient-to-br from-emerald-900 via-pakistan-dark to-emerald-800 min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden select-none">
 
-  <div class="max-w-md w-full text-center space-y-6 animate-slide-up">
-    <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-2">
-      <span class="text-4xl text-green-600">✓</span>
-    </div>
+  <!--flag pictures-->
 
-    <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-      <h1 class="text-3xl font-extrabold text-slate-800">You're on the list!</h1>
-      <p class="text-slate-500 mt-2">A confirmation email is on its way.</p>
-      
-      <div class="mt-8 pt-8 border-t-2 border-dashed border-slate-200 relative">
-        <div class="absolute -top-4 -left-10 w-8 h-8 bg-slate-50 rounded-full"></div>
-        <div class="absolute -top-4 -right-10 w-8 h-8 bg-slate-50 rounded-full"></div>
+  <img src="Images/pakistan_flag.png" alt="leftFlag" class="hidden sm:block fixed top-6 left-6 w-24 md:w-32 transform -rotate-12 opacity-80 pointer-events-none drop-shadow-md z-0" />
+  <img src="Images/pakistan_flag.png" alt="rightFlag" class="hidden sm:block fixed top-6 right-6 w-24 md:w-32 transform rotate-12 opacity-80 pointer-events-none drop-shadow-md z-0" />
+
+  <!-- Main Confirmation Background -->
+  <div class="relative z-10 bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl p-6 md:p-8 w-full max-w-xl text-center animate-fade-in border-t-4 border-pakistan-gold ticket-cutout-mask">
         
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Official Event Ticket</p>
-
-        <div id="qr-container" class="bg-slate-50 p-4 rounded-2xl inline-block">
-          <canvas id="qr-code" class="mx-auto"></canvas>
-        </div>
-
-        <p class="mt-4 text-sm font-medium text-slate-600 italic">One ticket for all listed guests</p>
-      </div>
-
-      <button id="downloadBtn" type="button" 
-        class="w-full bg-slate-900 text-white font-bold py-4 mt-8 rounded-xl shadow-lg hover:bg-slate-800 active:scale-95 transition-all">Download PDF Ticket ⬇
-      </button>
+    <!-- Checkmark and Confirmation Text -->
+     
+    <div class="inline-flex items-center justify-center w-24 h-24 bg-emerald-50 text-emerald-900 border-2 border-emerald-100 rounded-full mb-4 shadow-sm animate-pulse">
+      <span class="text-5xl font-black">✓</span>
     </div>
+
+    <h1 class="text-4xl font-black tracking-tight text-emerald-900 md:text-5xl">You're on the list!</h1>
+    <p class="text-md text-pakistan-gold font-bold tracking-widest uppercase mt-2">Hofstra Pakistani Students Association</p>
+    <div class="w-24 h-1 bg-pakistan-gold mx-auto mt-4 rounded-full"></div>
+        
+    <p class="text-gray-600 font-medium text-lg mt-4">A confirmation email is on its way.</p>
+        
+    <!-- Barcode Ticket Section -->
+
+    <div class="mt-8 pt-8 border-t-4 border-dashed border-gray-200 relative">             
+      <p class="text-md font-black text-gray-400 uppercase tracking-widest mb-6">Barcode TICKET</p>
+      <div id="barcode-container" class="bg-gray-50/50 border border-gray-200 p-4 rounded-xl inline-block w-full max-w-sm">
+        <svg id="barcode" class="mx-auto w-full"></svg>
+      </div>
+            
+      <p class="mt-4 text-md font-bold text-emerald-900 italic">One barcode valid for all listed guests</p>
+    </div>
+
+    <div class="pt-6">
+      <button id="downloadBtn" type="button"  class="bg-emerald-950 text-white font-black tracking-wide py-4 px-6 text-xl rounded-xl hover:bg-emerald-900 w-full transition-all duration-300 shadow-md hover:shadow-emerald-950/20 active:scale-[0.99]">
+        Download PDF Ticket ⬇
+      </button>
+      </div>
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+
+      // fires celebratory aesthetic elements upon window validation
+                
       try { 
-      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#059669', '#10b981', '#34d399'] }); 
+        confetti({ 
+        particleCount: 160, 
+          spread: 80, 
+          origin: { y: 0.55 }, 
+          colors: ['#004b23', '#007200', '#d4af37', '#ffffff'] 
+        }); 
       } 
-      catch {}
-
-      const id = localStorage.getItem("ticketId");
-      if (!id) return;
-
-      const canvas = document.getElementById("qr-code");
-      const ticketUrl = `${location.origin}/ticket.html?id=${encodeURIComponent(id)}`;
-
-      if (window.QRCode?.toCanvas) {
-        QRCode.toCanvas(canvas, ticketUrl, { width: 200, margin: 2, color: { dark: "#0f172a", light: "#f8fafc" } });
+      catch (err) {
+        console.error("Confetti framework failed initialized stream: ", err);
       }
 
+      // check confirmation identifier verification arrays
+                
+      const id = localStorage.getItem("ticketId");
+      if (!id) {
+        console.warn("No active secure authorization transaction ID discovered in storage arrays.");
+        return;
+      }
+
+      // builds a clean linear barcode string map using the backend confirmation tracking id
+      
+      if (window.JsBarcode) {
+        JsBarcode("#barcode", id, {
+          format: "CODE128",       // standard high-density alpha-numeric barcode architecture
+          width: 2.2,              // line width scaling profiles
+          height: 85,              // barcode line vertical structural size
+          displayValue: true,      // leaves verification text visible underneath code matrix
+          text: `TICKET: ${id}`,   // appends tracking label styling text helper
+          font: "monospace",       // clean matching font style
+          fontSize: 15,
+          fontOptions: "bold",
+          lineColor: "#022c22",    // maps deep emerald green structure
+          background: "transparent"
+        });
+      }
+
+      // tracks high-quality programmatic document synthesis operations
+        
       document.getElementById("downloadBtn").addEventListener("click", () => {
         alert("Preparing your high-quality PDF...");
-          fetch(`${location.origin}/generate-pdf?id=${encodeURIComponent(id)}`)
-            .then(response => response.blob())
-            .then(blob => {
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `PSA_Event_Ticket_${id}.pdf`;
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-              URL.revokeObjectURL(url);
-            })
-            .catch(() => alert("Sorry, there was an error generating your PDF. Please try again later."));
+        fetch(`${location.origin}/generate-pdf?id=${encodeURIComponent(id)}`)
+
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Server transmission error encountered.");
+          }
+          return response.blob();
+        })
+                        
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `PSA_Event_Ticket_${id}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        })
+                      
+        .catch((err) => {
+          console.error(err);
+          alert("Sorry, there was an error generating your PDF. Please try again later.");
+        });
       });
     });
   </script>

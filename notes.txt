@@ -4,7 +4,6 @@ To do:
 - create program with barcode scanner to scan barcode and tell user whether or not it is a valid barcode and displays name and guests
 
 BACKEND To do:
-- Setup emailjs
 - Send calender invites (.ics files) with confirmation email
 - Allow admin approval before sending tickets (status-based)
 - check if email, and id have already been used to prevent multiple submissions at once

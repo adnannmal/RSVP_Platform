@@ -16,7 +16,7 @@ import csv
 import io
 import re
 import base64
-import httpx
+import httpx # type: ignore
 
 # ── App setup ──────────────────────────────────────────────────────────────────
 app = FastAPI(title="PSA RSVP Backend")
@@ -42,10 +42,10 @@ db     = client["rsvp_db"]
 col    = db["rsvps"]
 
 # ──EMAILJS configuration ────────────────────────────────────────────────────────────────────
-EMAILJS_SERVICE_ID = os.getenv("EMAILJS_SERVICE_ID")
-EMAILJS_TEMPLATE_ID = os.getenv("EMAILJS_TEMPLATE_ID")
-EMAILJS_PUBLIC_KEY = os.getenv("EMAILJS_PUBLIC_KEY")
-EMAILJS_PRIVATE_KEY = os.getenv("EMAILJS_PRIVATE_KEY")
+EMAILJS_SERVICE_ID = os.getenv("service_3plemeo")
+EMAILJS_TEMPLATE_ID = os.getenv("template_e9x29el")
+EMAILJS_PUBLIC_KEY = os.getenv("lblJeEvWkdaqbQOzT")
+EMAILJS_PRIVATE_KEY = os.getenv("ajb0EGMLvNcsX0XuUzH0d")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://psa-rsvp.vercel.app")
 EVENT_LOCATION = os.getenv("EVENT_LOCATION", "Hofstra University")

@@ -31,7 +31,27 @@
 </head>
 
 <body class="bg-emerald-800 min-h-screen p-4 md:p-10 font-sans text-slate-100 relative overflow-x-hidden select-none">
-    <div class="max-w-6xl mx-auto relative z-10 animate-fade-in">
+
+    <!-- Admin PIN Gate -->
+
+    <div id="pinGate" class="max-w-md mx-auto relative z-10 animate-fade-in min-h-[85vh] flex items-center justify-center">
+        <div class="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border-t-4 border-pakistan-gold w-full">
+            <div class="text-center mb-6">
+                <h1 class="text-4xl font-black text-emerald-900 tracking-tight">Admin Access</h1>
+                <p class="text-pakistan-gold font-bold tracking-widest uppercase text-sm mt-1">Enter PIN to view dashboard</p>
+            </div>
+
+            <input id="adminPinInput" type="password" placeholder="Enter admin PIN" class="w-full px-5 py-3 rounded-xl border-2 border-emerald-100 text-emerald-900 font-bold outline-none focus:border-pakistan-gold transition-all duration-300 mb-4" />
+
+            <button id="unlockAdmin" class="w-full bg-emerald-900 hover:bg-emerald-800 text-white font-black px-6 py-3 rounded-xl shadow-md transition-all duration-300 active:scale-95">
+                Unlock Dashboard
+            </button>
+
+            <p id="pinError" class="hidden text-red-600 text-sm font-bold text-center mt-4">Incorrect PIN. Try again.</p>
+        </div>
+    </div>
+
+    <div id="adminDashboard" class="hidden max-w-6xl mx-auto relative z-10 animate-fade-in">
         
         <!-- Dashboard Header -->
 
@@ -81,10 +101,58 @@
 
 <script>
     const API_BASE = "https://rsvp-backend-5b7q.onrender.com";     
+    const pinGate = document.getElementById("pinGate");
+    const adminDashboard = document.getElementById("adminDashboard");
+    const pinInput = document.getElementById("adminPinInput");
+    const pinError = document.getElementById("pinError");
+    const unlockBtn = document.getElementById("unlockAdmin");
     const tableBody = document.getElementById("rsvpTableBody");
     const totalCountEl = document.getElementById("totalCount");
     const exportBtn = document.getElementById("exportCSV");
     const clearBtn  = document.getElementById("clearAll");
+
+    function showDashboard() { // Show admin dashboard after PIN is verified
+        sessionStorage.setItem("adminUnlocked", "true");
+        pinGate.classList.add("hidden");
+        adminDashboard.classList.remove("hidden");
+        loadRSVPs();
+    }
+
+    async function checkAdminPin() { // Send PIN to backend for verification
+        const pin = pinInput.value.trim();
+        pinError.classList.add("hidden");
+
+        if (!pin) {
+            pinError.textContent = "Please enter the admin PIN.";
+            pinError.classList.remove("hidden");
+            return;
+        }
+
+        try {
+            const r = await fetch(`${API_BASE}/verify-pin`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ pin })
+            });
+
+            const data = await r.json();
+
+            if (!r.ok || !data.success) {
+                pinError.textContent = "Incorrect PIN. Try again.";
+                pinError.classList.remove("hidden");
+                return;
+            }
+
+            showDashboard();
+        }
+        catch (err) {
+            console.error(err);
+            pinError.textContent = "Could not connect to server. Try again.";
+            pinError.classList.remove("hidden");
+        }
+    }
 
     async function loadRSVPs() { // Fetch and display RSVPs in the table
         tableBody.innerHTML = "";
@@ -158,9 +226,21 @@
         }
     }
 
+    unlockBtn?.addEventListener("click", checkAdminPin);
     exportBtn?.addEventListener("click", exportCSV);
     clearBtn?.addEventListener("click", clearEntries);
-    window.addEventListener("DOMContentLoaded", loadRSVPs);
+
+    pinInput?.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            checkAdminPin();
+        }
+    });
+
+    window.addEventListener("DOMContentLoaded", function () {
+        if (sessionStorage.getItem("adminUnlocked") === "true") {
+            showDashboard();
+        }
+    });
 </script>
 </body>
 </html>

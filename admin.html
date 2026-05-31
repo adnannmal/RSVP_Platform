@@ -92,7 +92,9 @@
                             <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Attendee</th>
                             <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Hofstra ID</th>
                             <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Guests</th>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Status</th>
                             <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Submission Time</th>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="rsvpTableBody" class="divide-y divide-gray-100 text-gray-700">
@@ -174,6 +176,65 @@
         }
     }
 
+    async function approveRSVP(id) { // Approve RSVP and send confirmation email
+        if (!confirm("Approve this RSVP and send the confirmation email?")) {
+            return;
+        }
+
+        try {
+            const r = await fetch(`${API_BASE}/rsvps/${id}/approve`, {
+                method: "PATCH",
+                headers: {
+                    "x-admin-pin": adminPin
+                }
+            });
+
+            const data = await r.json();
+
+            if (!r.ok) {
+                throw new Error(data.detail || "Failed to approve RSVP.");
+            }
+
+            alert(data.message || "RSVP approved.");
+            loadRSVPs();
+        }
+        catch (err) {
+            console.error(err);
+            alert(err.message || "Failed to approve RSVP.");
+        }
+    }
+
+    async function rejectRSVP(id) { // Reject RSVP
+        if (!confirm("Reject this RSVP?")) {
+            return;
+        }
+
+        try {
+            const r = await fetch(`${API_BASE}/rsvps/${id}/reject`, {
+                method: "PATCH",
+                headers: {
+                    "x-admin-pin": adminPin
+                }
+            });
+
+            const data = await r.json();
+
+            if (!r.ok) {
+                throw new Error(data.detail || "Failed to reject RSVP.");
+            }
+
+            alert(data.message || "RSVP rejected.");
+            loadRSVPs();
+        }
+        catch (err) {
+            console.error(err);
+            alert(err.message || "Failed to reject RSVP.");
+        }
+    }
+
+    window.approveRSVP = approveRSVP;
+    window.rejectRSVP = rejectRSVP;
+
     async function loadRSVPs() { // Fetch and display RSVPs in the table
         tableBody.innerHTML = "";
 
@@ -198,7 +259,7 @@
             }
 
             if (!Array.isArray(list) || list.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center italic text-gray-400">No RSVPs yet.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center italic text-gray-400">No RSVPs yet.</td></tr>`;
                 return;
             }
 
@@ -211,6 +272,38 @@
 
                 if (e.guest2fname || e.guest2lname) {
                     guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
+                }
+
+                const status = e.approvalStatus || "pending";
+
+                let statusBadge = "";
+
+                if (status === "approved") {
+                    statusBadge = `<span class="bg-green-100 text-green-800 border border-green-200 px-3 py-1 rounded-lg text-xs font-black uppercase">Approved</span>`;
+                }
+                else if (status === "rejected") {
+                    statusBadge = `<span class="bg-red-100 text-red-800 border border-red-200 px-3 py-1 rounded-lg text-xs font-black uppercase">Rejected</span>`;
+                }
+                else {
+                    statusBadge = `<span class="bg-yellow-100 text-yellow-800 border border-yellow-200 px-3 py-1 rounded-lg text-xs font-black uppercase">Pending</span>`;
+                }
+
+                let actionButtons = "";
+
+                if (status === "pending") {
+                    actionButtons = `
+                        <div class="flex gap-2">
+                            <button onclick="approveRSVP('${e.id}')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-black">
+                                Approve
+                            </button>
+                            <button onclick="rejectRSVP('${e.id}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-black">
+                                Reject
+                            </button>
+                        </div>
+                    `;
+                }
+                else {
+                    actionButtons = `<span class="text-gray-400 italic text-sm">No action</span>`;
                 }
 
                 const tr = document.createElement("tr");
@@ -228,7 +321,9 @@
                             : `<span class="text-gray-400 italic text-sm">None</span>`
                         }
                     </td>
+                    <td class="px-6 py-4">${statusBadge}</td>
                     <td class="px-6 py-4 text-sm font-bold text-gray-500">${e.submitTime || "N/A"}</td>
+                    <td class="px-6 py-4">${actionButtons}</td>
                 `;
 
                 tableBody.appendChild(tr);
@@ -236,7 +331,7 @@
         } 
         catch (err) {
             console.error(err);
-            tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center text-red-600 font-bold">Failed to load RSVPs. Please log in again.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-red-600 font-bold">Failed to load RSVPs. Please log in again.</td></tr>`;
             sessionStorage.removeItem("adminPin");
         }
     }

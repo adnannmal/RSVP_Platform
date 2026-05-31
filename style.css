@@ -20,13 +20,13 @@
 
 .ticket-cutout-mask {
   mask-image:
-    radial-gradient(circle at left 0px top 220px, transparent 20px, black 21px),
-    radial-gradient(circle at right 0px top 220px, transparent 20px, black 21px);
+    radial-gradient(circle at left 0px top 340px, transparent 20px, black 21px),
+    radial-gradient(circle at right 0px top 340px, transparent 20px, black 21px);
   mask-composite: intersect;
 
   -webkit-mask-image:
-    radial-gradient(circle at left 0px top 326px, transparent 20px, black 21px),
-    radial-gradient(circle at right 0px top 326px, transparent 20px, black 21px);
+    radial-gradient(circle at left 0px bottom 340px, transparent 20px, black 21px),
+    radial-gradient(circle at right 0px bottom 340px, transparent 20px, black 21px);
   -webkit-mask-composite: source-in;
 }
 

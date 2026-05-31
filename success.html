@@ -5,10 +5,9 @@
 <head>   
   <meta charset="UTF-8" /> <!--tells web browser to interpret doc using UTF-8 encoding-->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
-  <title>RSVP Confirmed!</title> <!--Title shown in browser tab-->
+  <title>RSVP Submitted!</title> <!--Title shown in browser tab-->
   <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
   <script src="https://cdn.tailwindcss.com"></script>  
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script> 
   <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
   <script>
@@ -48,39 +47,42 @@
       <span class="text-5xl font-black">✓</span>
     </div>
 
-    <h1 class="text-4xl font-black tracking-tight text-emerald-900 md:text-5xl">You're on the list!</h1>
+    <h1 class="text-4xl font-black tracking-tight text-emerald-900 md:text-5xl">RSVP Submitted!</h1>
     <p class="text-md text-pakistan-gold font-bold tracking-widest uppercase mt-2">Hofstra Pakistani Students Association</p>
-    <div class="w-29 h-1 bg-pakistan-gold mx-auto mt-4 rounded-full"></div>
+    <div class="w-full h-1 bg-pakistan-gold mx-auto mt-4 rounded-full"></div>
         
-    <p class="text-gray-600 font-medium text-lg mt-4">A confirmation email is on its way.</p>
+    <p class="text-gray-600 font-medium text-lg mt-4">
+      Your RSVP has been received and is pending admin approval.
+    </p>
+
+    <p class="text-gray-500 text-sm mt-2">
+      Once approved, you will receive a confirmation email with your ticket link.
+    </p>
         
-    <!-- Barcode Ticket Section -->
+    <!-- Pending Approval Section -->
 
     <div class="mt-8 pt-8 border-t-4 border-dashed border-gray-200 relative">             
-      <p class="text-md font-black text-gray-400 uppercase tracking-widest mb-6">Barcode TICKET</p>
-      <div id="barcode-container" class="bg-gray-50/50 border border-gray-200 p-4 rounded-xl inline-block w-full max-w-sm">
-        <svg id="barcode" class="mx-auto w-full"></svg>
+      <p class="text-md font-black text-gray-400 uppercase tracking-widest mb-6">Approval Pending</p>
+      <div class="bg-emerald-50/70 border border-emerald-100 p-6 rounded-xl w-full max-w-sm mx-auto">
+        <div class="text-emerald-900 text-5xl mb-3">⏳</div>
+        <p class="text-emerald-900 font-black text-lg">Your ticket is not available yet.</p>
+        <p class="text-gray-600 text-sm mt-2">
+          Please check your Hofstra email after your RSVP is reviewed.
+        </p>
       </div>
             
-      <p class="mt-4 text-md font-bold text-emerald-900 italic">One barcode valid for all listed guests</p>
+      <p class="mt-4 text-md font-bold text-emerald-900 italic">Thank you for RSVPing!</p>
     </div>
-
-    <div class="pt-6">
-      <button id="downloadBtn" type="button"  class="bg-emerald-950 text-white font-black tracking-wide py-4 px-6 text-xl rounded-xl hover:bg-emerald-900 w-full transition-all duration-300 shadow-md hover:shadow-emerald-950/20 active:scale-[0.99]">
-        Download PDF Ticket ⬇
-      </button>
-      </div>
   </div>
 
   <script>
-    const API_BASE = "https://rsvp-backend-5b7q.onrender.com";
     document.addEventListener("DOMContentLoaded", () => {
 
       // fires celebratory aesthetic elements upon window validation
                 
       try { 
         confetti({ 
-        particleCount: 160, 
+          particleCount: 160, 
           spread: 80, 
           origin: { y: 0.55 }, 
           colors: ['#004b23', '#007200', '#d4af37', '#ffffff'] 
@@ -89,60 +91,6 @@
       catch (err) {
         console.error("Confetti framework failed initialized stream: ", err);
       }
-
-      // check confirmation identifier verification arrays
-                
-      const id = localStorage.getItem("ticketId");
-      if (!id) {
-        console.warn("No active secure authorization transaction ID discovered in storage arrays.");
-        return;
-      }
-
-      // builds a clean linear barcode string map using the backend confirmation tracking id
-      
-      if (window.JsBarcode) {
-        JsBarcode("#barcode", id, {
-          format: "CODE128",       // standard high-density alpha-numeric barcode architecture
-          width: 4.2,              // line width scaling profiles
-          height: 150,              // barcode line vertical structural size
-          displayValue: false,      // leaves verification text visible underneath code matrix
-          text: `TICKET: ${id}`,   // appends tracking label styling text helper
-          font: "monospace",       // clean matching font style
-          fontSize: 15,
-          fontOptions: "bold",
-          lineColor: "#022c22",    // maps deep emerald green structure
-          background: "transparent"
-        });
-      }
-
-      // tracks high-quality programmatic document synthesis operations
-        
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        fetch(`${API_BASE}/generate-pdf?id=${encodeURIComponent(id)}`)
-
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("Server transmission error encountered.");
-          }
-          return response.blob();
-        })
-                        
-        .then(blob => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `PSA_Event_Ticket_${id}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-        })
-                      
-        .catch((err) => {
-          console.error(err);
-          alert("Sorry, there was an error generating your PDF. Please try again later.");
-        });
-      });
     });
   </script>
 </body>

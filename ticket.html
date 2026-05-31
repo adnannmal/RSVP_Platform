@@ -1,128 +1,132 @@
-<!--Opened when barcode is scanned-->
+<!--Opened when ticket link from EmailJS is clicked-->
 
 <!DOCTYPE html>
 
 <html lang="en">
 
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta charset="UTF-8" />
   <title>Ticket</title>
-  <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
-  <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> <!--qr code builder-->
+
+  <!--Barcode generator-->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+  <style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+  </style>
 </head>
 
-<body class="bg-blue-300 min-h-screen flex flex-col items-center justify-center">
+<body class="bg-green-100 min-h-screen flex flex-col items-center justify-center p-6">
 
-    <!--Password Entry-->
+    <!--Ticket Display-->
 
-    <div id="authUser" class="bg-white shadow-xl rounded-lg p-6 w-full max-w-md animate-fade-in">
-        <h1 class="text-3xl font-bold mb-6 text-center text-black">Enter PIN to View Ticket <!--main heading-->
-        </h1>
+    <div id="ticket" class="text-center p-6 bg-white rounded-lg shadow-lg animate-fade-in max-w-md w-full">
+        <h1 class="text-3xl font-bold text-green-700 mb-2">🎟️ Your Event Ticket</h1>
+        <p class="text-gray-700 mb-4">(All names listed are on one ticket)</p>
 
-        <!--Input for password-->
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 text-left">
+            <p class="text-gray-800">
+                <strong>Full Name:</strong>
+                <span id="ticketName"></span>
+            </p>
 
-        <label class="block ">
-            <span class="text-gray-700">
-            </span>
-            <input id="pass" type="text" name="inputPass" placeholder="PIN" pattern="^\\d{6}$" required class="w-full border p-2  mt-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400 transition" />
-        </label>
+            <div id="guestSection" class="hidden mt-3">
+                <p class="font-semibold text-gray-800">Guests:</p>
+                <ul id="guestList" class="list-disc list-inside text-gray-700"></ul>
+            </div>
+        </div>
 
-        <!--Submit Button-->
+        <p class="mb-2 text-gray-800 font-semibold">Check-In Barcode</p>
 
-        <button onclick="checkPass()" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700 w-full">Submit
-        </button>
+        <!--Barcode appears here-->
+        <svg id="barcode" class="mx-auto w-full"></svg>
 
-        <p id="error" class="text-red-500 font-bold hidden mt-2">Incorrect password</p>
+        <p id="ticketCodeText" class="text-xs text-gray-500 mt-2 break-all"></p>
     </div>
 
-    <!-- Ticket information display (initially hidden) -->
-
-    <div id="ticket" class="hidden mt-4 p-6 bg-white rounded shadow max-w-md w-full"></div>
-
     <script>
-        const API_BASE = "https://rsvp-backend-5b7q.onrender.com"; // Server PORT
+        let data;
 
-        const params = new URLSearchParams(location.search);
-        const id = params.get("id");
+        try {
+            const query = new URLSearchParams(window.location.search);
+            data = JSON.parse(decodeURIComponent(query.get("data")));
 
-        let ticket = null;
+            console.log("Decoded data:", data);
 
-        async function fetchTicket() {
-            if (!id) {
-                throw new Error("Missing ticket id");
+            // check ticket expiration
+
+            const dateNow = new Date();
+            const ticketExpire = new Date(data.ticketExpire);
+
+            if (dateNow > ticketExpire) {
+                throw new Error("Ticket expired");
             }
 
-            const r = await fetch(`${API_BASE}/ticket/${encodeURIComponent(id)}`);
-            const j = await r.json();
-
-            if (!j.ok) {
-                throw new Error(j.error || "Ticket error");
-            }
-
-            ticket = j.ticket;
+            console.log("Valid ticket");
         }
-
-        async function verifyPin(pin) {
-            const r = await fetch(`${API_BASE}/verify-pin`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ pin: String(pin || "") })
-            });
-
-            const j = await r.json();
-            return !!j.ok;
-        }
-
-        function renderTicket() {
-            const wrap = document.getElementById("ticket");
-            const guests = [];
-
-            if (ticket.guest1fname || ticket.guest1lname) {
-                guests.push(`${ticket.guest1fname || ""} ${ticket.guest1lname || ""}`.trim());
-            }
-
-            if (ticket.guest2fname || ticket.guest2lname) {
-                guests.push(`${ticket.guest2fname || ""} ${ticket.guest2lname || ""}`.trim());
-            }
-
-            wrap.innerHTML = `
-                <div class="space-y-3 text-left">
-                <h2 class="text-2xl font-bold text-green-700 mb-2">🎟️ Event Ticket</h2>
-                <p><strong>Name:</strong> ${ticket.fname || ""} ${ticket.lname || ""}</p>
-                ${ticket.hofstraId ? `<p><strong>ID:</strong> ${ticket.hofstraId}</p>` : ""}
-                ${guests.length ? `<div><p class="font-semibold">Guests:</p><ul class="list-disc list-inside text-gray-700">${guests.map(g=>`<li>${g}</li>`).join("")}</ul></div>` : ""}
-                ${ticket.submitTime ? `<p class="text-sm text-gray-500">Submitted: ${ticket.submitTime}</p>` : ""}
-                <p class="text-xs text-gray-400">Ticket ID: ${ticket.id}</p>
+        catch (err) {
+            document.body.innerHTML = `
+                <div class="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
+                    <h1 class="text-3xl font-bold text-red-700 mb-2">❌ Ticket Invalid</h1>
+                    <p class="text-gray-700">This ticket has expired or could not be loaded.</p>
                 </div>
             `;
-            wrap.classList.remove("hidden");
+            throw err;
         }
 
-        document.getElementById("submitPin")?.addEventListener("click", async () => {
-            const val = document.getElementById("pass").value.trim();
-            const ok = await verifyPin(val);
-            
-            if (!ok) {
-                document.getElementById("error").classList.remove("hidden");
-                return;
-            }
+        const ticketName = document.getElementById("ticketName");
+        const guestSection = document.getElementById("guestSection");
+        const guestList = document.getElementById("guestList");
+        const ticketCodeText = document.getElementById("ticketCodeText");
 
-            document.getElementById("authUser").classList.add("hidden");
-            renderTicket();
+        ticketName.innerText = `${data.fname} ${data.lname}`;
+
+        // build guest list conditionally
+
+        if (data.guest1fname || data.guest1lname) {
+            const li = document.createElement("li");
+            li.innerText = `${data.guest1fname} ${data.guest1lname}`;
+            guestList.appendChild(li);
+        }
+
+        if (data.guest2fname || data.guest2lname) {
+            const li = document.createElement("li");
+            li.innerText = `${data.guest2fname} ${data.guest2lname}`;
+            guestList.appendChild(li);
+        }
+
+        if (guestList.children.length > 0) {
+            guestSection.classList.remove("hidden");
+        }
+
+        // create a short barcode value for check-in scanning
+
+        const ticketCode = `${data.hofstraId}-${data.fname}-${data.lname}`
+            .replace(/\s+/g, "")
+            .toUpperCase();
+
+        ticketCodeText.innerText = ticketCode;
+
+        // render barcode for check-in scanning
+
+        JsBarcode("#barcode", ticketCode, {
+            format: "CODE128",
+            lineColor: "#000",
+            width: 2,
+            height: 80,
+            displayValue: true,
+            fontSize: 14,
+            margin: 10
         });
-
-        (async () => {
-            try { 
-                await fetchTicket(); 
-            }
-            catch (e) {
-                console.error(e);
-                document.body.innerHTML = `<p class="text-red-700 text-center font-bold">❌ ${e.message}</p>`;
-            }
-        })();
     </script>
 </body>
 </html>

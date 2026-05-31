@@ -85,7 +85,7 @@ class RSVPSubmit(BaseModel):
     guest1lname: str = ""
     guest2fname: str = ""
     guest2lname: str = ""
-    qrExpire:    str = ""
+    ticketExpire:    str = ""
 
     @field_validator("email")
     @classmethod
@@ -213,15 +213,19 @@ async def submit_rsvp(data: RSVPSubmit):
 
     doc = data.model_dump()
     doc["submitTime"] = est_now()
+    doc["approvalStatus"] = "pending"
+    doc["emailSent"] = False
 
     result = await col.insert_one(doc)
     ticket_id = str(result.inserted_id)
 
-    await send_confirmation_email(doc, ticket_id)
+    return {
+        "success": True, 
+        "id": ticket_id,
+        "message": "RSVP submitted successfully. We will send a confirmation email with ticket details."
+    }
 
-    return {"success": True, "id": ticket_id}
-
-# ── Get single ticket (for QR scan) ───────────────────────────────────────────
+# ── Get single ticket (for ticket scan) ───────────────────────────────────────────
 @app.get("/ticket/{ticket_id}")
 async def get_ticket(ticket_id: str):
     try:
@@ -232,14 +236,22 @@ async def get_ticket(ticket_id: str):
     doc = await col.find_one({"_id": oid})
     if not doc:
         raise HTTPException(status_code=404, detail="Ticket not found.")
+    
+    approval_status = doc.get("approvalStatus", "pending")
 
-    # Check QR expiry
-    qr_expire = doc.get("qrExpire", "")
-    if qr_expire:
+    if approval_status != "approved":
+        return {
+            "ok": False,
+            "error": "This RSVP has not been approved yet."
+        }
+
+    # Check ticket expiry
+    ticket_expire = doc.get("ticketExpire", "")
+    if ticket_expire:
         try:
-            expire_dt = datetime.fromisoformat(qr_expire.replace("Z", "+00:00"))
+            expire_dt = datetime.fromisoformat(ticket_expire.replace("Z", "+00:00"))
             if datetime.now(timezone.utc) > expire_dt:
-                return {"ok": False, "error": "This QR code has expired."}
+                return {"ok": False, "error": "This ticket has expired."}
         except ValueError:
             pass
 
@@ -561,3 +573,83 @@ async def generate_pdf(id: str):
             "Content-Disposition": f'attachment; filename="PSA_Event_Ticket_{id}.pdf"'
         },
     )
+
+# ── Approve RSVP ─────────────────────────────────────────
+@app.patch("/rsvps/{ticket_id}/approve")
+async def approve_rsvp(ticket_id: str, request: Request):
+    require_admin(request)
+
+    try:
+        oid = ObjectId(ticket_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid RSVP ID format.")
+
+    doc = await col.find_one({"_id": oid})
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="RSVP not found.")
+
+    if doc.get("approvalStatus") == "approved" and doc.get("emailSent") is True:
+        return {
+            "success": True,
+            "message": "RSVP was already approved and email was already sent."
+        }
+
+    await col.update_one(
+        {"_id": oid},
+        {
+            "$set": {
+                "approvalStatus": "approved",
+                "approvedTime": est_now()
+            }
+        }
+    )
+
+    updated_doc = await col.find_one({"_id": oid})
+
+    await send_confirmation_email(updated_doc, ticket_id)
+
+    await col.update_one(
+        {"_id": oid},
+        {
+            "$set": {
+                "emailSent": True,
+                "emailSentTime": est_now()
+            }
+        }
+    )
+
+    return {
+        "success": True,
+        "message": "RSVP approved and confirmation email sent."
+    }
+
+# ── Reject RSVP ─────────────────────────────────────────
+@app.patch("/rsvps/{ticket_id}/reject")
+async def reject_rsvp(ticket_id: str, request: Request):
+    require_admin(request)
+
+    try:
+        oid = ObjectId(ticket_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid RSVP ID format.")
+
+    doc = await col.find_one({"_id": oid})
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="RSVP not found.")
+
+    await col.update_one(
+        {"_id": oid},
+        {
+            "$set": {
+                "approvalStatus": "rejected",
+                "rejectedTime": est_now()
+            }
+        }
+    )
+
+    return {
+        "success": True,
+        "message": "RSVP rejected."
+    }

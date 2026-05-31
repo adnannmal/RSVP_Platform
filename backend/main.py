@@ -545,3 +545,20 @@ async def generate_pdf(id: str):
             "Content-Disposition": f'attachment; filename="PSA_Event_Ticket_{id}.pdf"'
         },
     )
+
+# ── Verify PIN ─────────────────────────────────────────────────────────────────
+class PinRequest(BaseModel):
+    pin: str
+
+@app.post("/verify-pin")
+def verify_pin(request: PinRequest):
+    if request.pin.strip() == os.getenv("ADMIN_PIN"):
+        return {
+            "success": True,
+            "message": "PIN verified"
+        }
+
+    return {
+        "success": False,
+        "message": "Invalid PIN"
+    }

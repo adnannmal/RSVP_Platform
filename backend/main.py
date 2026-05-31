@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr, field_validator
@@ -67,6 +67,12 @@ def doc_to_dict(doc: dict) -> dict:
     """Convert MongoDB document to JSON-serialisable dict."""
     doc["id"] = str(doc.pop("_id"))
     return doc
+
+def require_admin(request: Request):
+    pin = request.headers.get("x-admin-pin")
+
+    if pin != ADMIN_PIN:
+        raise HTTPException(status_code=401, detail="Unauthorized admin access.")
 
 # ── Schemas ────────────────────────────────────────────────────────────────────
 class RSVPSubmit(BaseModel):
@@ -250,7 +256,9 @@ async def verify_pin(body: PinVerify):
 
 # ── List all RSVPs (admin) ─────────────────────────────────────────────────────
 @app.get("/rsvps")
-async def list_rsvps():
+async def list_rsvps(request: Request):
+    require_admin(request)
+
     docs = []
     async for doc in col.find().sort("submitTime", -1):
         docs.append(doc_to_dict(doc))
@@ -259,22 +267,29 @@ async def list_rsvps():
 
 # ── Delete all RSVPs (admin) ───────────────────────────────────────────────────
 @app.delete("/rsvps")
-async def clear_rsvps():
+async def clear_rsvps(request: Request):
+    require_admin(request)
+
     result = await col.delete_many({})
     return {"deleted": result.deleted_count}
 
 
 # ── Export CSV ─────────────────────────────────────────────────────────────────
 @app.get("/export.csv")
-async def export_csv():
+async def export_csv(request: Request):
+    require_admin(request)
+
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["ID", "First Name", "Last Name", "Email", "Hofstra ID",
-                     "Status", "Guest 1", "Guest 2", "Submit Time"])
+    writer.writerow([
+        "ID", "First Name", "Last Name", "Email", "Hofstra ID",
+        "Status", "Guest 1", "Guest 2", "Submit Time"
+    ])
 
     async for doc in col.find().sort("submitTime", 1):
         g1 = f"{doc.get('guest1fname','')} {doc.get('guest1lname','')}".strip()
         g2 = f"{doc.get('guest2fname','')} {doc.get('guest2lname','')}".strip()
+
         writer.writerow([
             str(doc["_id"]),
             doc.get("fname", ""),
@@ -290,6 +305,7 @@ async def export_csv():
     output.seek(0)
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"rsvp_export_{date_str}.csv"
+
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
@@ -545,20 +561,3 @@ async def generate_pdf(id: str):
             "Content-Disposition": f'attachment; filename="PSA_Event_Ticket_{id}.pdf"'
         },
     )
-
-# ── Verify PIN ─────────────────────────────────────────────────────────────────
-class PinRequest(BaseModel):
-    pin: str
-
-@app.post("/verify-pin")
-def verify_pin(request: PinRequest):
-    if request.pin.strip() == os.getenv("ADMIN_PIN"):
-        return {
-            "success": True,
-            "message": "PIN verified"
-        }
-
-    return {
-        "success": False,
-        "message": "Invalid PIN"
-    }

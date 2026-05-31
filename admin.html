@@ -67,6 +67,9 @@
                 <button id="clearAll" class="bg-red-600 hover:bg-red-700 text-white font-black px-6 py-2.5 rounded-xl shadow-md transition-all duration-300 active:scale-95">
                     Clear Data
                 </button>
+                <button id="logoutAdmin" class="bg-pakistan-gold text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md hover:opacity-90 transition-all duration-300 active:scale-95">
+                    Logout
+                </button>
             </div>
         </div>
 
@@ -93,7 +96,7 @@
                         </tr>
                     </thead>
                     <tbody id="rsvpTableBody" class="divide-y divide-gray-100 text-gray-700">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -101,21 +104,36 @@
 
 <script>
     const API_BASE = "https://rsvp-backend-5b7q.onrender.com";     
+
     const pinGate = document.getElementById("pinGate");
     const adminDashboard = document.getElementById("adminDashboard");
     const pinInput = document.getElementById("adminPinInput");
     const pinError = document.getElementById("pinError");
     const unlockBtn = document.getElementById("unlockAdmin");
+    const logoutBtn = document.getElementById("logoutAdmin");
+
     const tableBody = document.getElementById("rsvpTableBody");
     const totalCountEl = document.getElementById("totalCount");
     const exportBtn = document.getElementById("exportCSV");
     const clearBtn  = document.getElementById("clearAll");
 
+    let adminPin = sessionStorage.getItem("adminPin") || "";
+
     function showDashboard() { // Show admin dashboard after PIN is verified
-        sessionStorage.setItem("adminUnlocked", "true");
         pinGate.classList.add("hidden");
         adminDashboard.classList.remove("hidden");
         loadRSVPs();
+    }
+
+    function logoutAdmin() { // Remove saved PIN and return to PIN screen
+        sessionStorage.removeItem("adminPin");
+        adminPin = "";
+        adminDashboard.classList.add("hidden");
+        pinGate.classList.remove("hidden");
+        pinInput.value = "";
+        pinError.classList.add("hidden");
+        tableBody.innerHTML = "";
+        totalCountEl.textContent = "0";
     }
 
     async function checkAdminPin() { // Send PIN to backend for verification
@@ -139,12 +157,14 @@
 
             const data = await r.json();
 
-            if (!r.ok || !data.success) {
+            if (!r.ok || (!data.ok && !data.success)) {
                 pinError.textContent = "Incorrect PIN. Try again.";
                 pinError.classList.remove("hidden");
                 return;
             }
 
+            adminPin = pin;
+            sessionStorage.setItem("adminPin", pin);
             showDashboard();
         }
         catch (err) {
@@ -156,13 +176,24 @@
 
     async function loadRSVPs() { // Fetch and display RSVPs in the table
         tableBody.innerHTML = "";
+
         try {
-            const r = await fetch(`${API_BASE}/rsvps`);
+            const r = await fetch(`${API_BASE}/rsvps`, {
+                headers: {
+                    "x-admin-pin": adminPin
+                }
+            });
+
+            if (!r.ok) {
+                throw new Error("Unauthorized or failed to load RSVPs.");
+            }
+
             const list = await r.json();
 
             if (Array.isArray(list)) {
                 totalCountEl.textContent = list.length;
-            } else {
+            } 
+            else {
                 totalCountEl.textContent = "0";
             }
 
@@ -197,38 +228,80 @@
                             : `<span class="text-gray-400 italic text-sm">None</span>`
                         }
                     </td>
-                    <td class="px-6 py-4 text-sm font-bold text-gray-500">${e.submitTime ? new Date(e.submitTime).toLocaleString() : "N/A"}</td>
+                    <td class="px-6 py-4 text-sm font-bold text-gray-500">${e.submitTime || "N/A"}</td>
                 `;
+
                 tableBody.appendChild(tr);
             }
         } 
         catch (err) {
             console.error(err);
-            alert("Failed to load RSVPs");
+            tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center text-red-600 font-bold">Failed to load RSVPs. Please log in again.</td></tr>`;
+            sessionStorage.removeItem("adminPin");
         }
     }
 
-    function exportCSV() {
-        window.location.href = `${API_BASE}/export.csv`;
+    async function exportCSV() { // Export RSVP data as CSV with admin PIN header
+        try {
+            const r = await fetch(`${API_BASE}/export.csv`, {
+                headers: {
+                    "x-admin-pin": adminPin
+                }
+            });
+
+            if (!r.ok) {
+                throw new Error("Failed to export CSV.");
+            }
+
+            const blob = await r.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+
+            a.href = url;
+            a.download = `rsvp_export_${new Date().toISOString().split("T")[0]}.csv`;
+
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            URL.revokeObjectURL(url);
+        }
+        catch (err) {
+            console.error(err);
+            alert("Failed to export CSV.");
+        }
     }
 
-    async function clearEntries() {
+    async function clearEntries() { // Delete all RSVP entries with admin PIN header
         if (!confirm("Delete ALL RSVP entries? This cannot be undone.")) {
             return;
         }
+
         try {
-            await fetch(`${API_BASE}/rsvps`, { method: "DELETE" });
+            const r = await fetch(`${API_BASE}/rsvps`, {
+                method: "DELETE",
+                headers: {
+                    "x-admin-pin": adminPin
+                }
+            });
+
+            if (!r.ok) {
+                throw new Error("Failed to clear RSVP data.");
+            }
+
+            alert("All RSVP entries were cleared.");
             loadRSVPs();
         } 
         catch (err) {
             console.error(err);
-            alert("Failed to clear");
+            alert("Failed to clear data.");
         }
     }
 
     unlockBtn?.addEventListener("click", checkAdminPin);
     exportBtn?.addEventListener("click", exportCSV);
     clearBtn?.addEventListener("click", clearEntries);
+    logoutBtn?.addEventListener("click", logoutAdmin);
 
     pinInput?.addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
@@ -237,7 +310,7 @@
     });
 
     window.addEventListener("DOMContentLoaded", function () {
-        if (sessionStorage.getItem("adminUnlocked") === "true") {
+        if (adminPin) {
             showDashboard();
         }
     });

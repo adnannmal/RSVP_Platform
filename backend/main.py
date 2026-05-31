@@ -16,7 +16,7 @@ import csv
 import io
 import re
 import base64
-import httpx # type: ignore
+import httpx
 
 # ── App setup ──────────────────────────────────────────────────────────────────
 app = FastAPI(title="PSA RSVP Backend")
@@ -42,10 +42,10 @@ db     = client["rsvp_db"]
 col    = db["rsvps"]
 
 # ──EMAILJS configuration ────────────────────────────────────────────────────────────────────
-EMAILJS_SERVICE_ID = os.getenv("service_3plemeo")
-EMAILJS_TEMPLATE_ID = os.getenv("template_e9x29el")
-EMAILJS_PUBLIC_KEY = os.getenv("lblJeEvWkdaqbQOzT")
-EMAILJS_PRIVATE_KEY = os.getenv("ajb0EGMLvNcsX0XuUzH0d")
+EMAILJS_SERVICE_ID = os.getenv("EMAILJS_SERVICE_ID")
+EMAILJS_TEMPLATE_ID = os.getenv("EMAILJS_TEMPLATE_ID")
+EMAILJS_PUBLIC_KEY = os.getenv("EMAILJS_PUBLIC_KEY")
+EMAILJS_PRIVATE_KEY = os.getenv("EMAILJS_PRIVATE_KEY")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://psa-rsvp.vercel.app")
 EVENT_LOCATION = os.getenv("EVENT_LOCATION", "Hofstra University")
@@ -137,7 +137,11 @@ def build_calendar_invite(ticket_id: str, full_name: str) -> str:
 
 async def send_confirmation_email(doc: dict, ticket_id: str):
     if not all([EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY]):
-        print("EmailJS is not fully configured. Skipping confirmation email.")
+        print("EmailJS is not fully configured.")
+        print("EMAILJS_SERVICE_ID:", bool(EMAILJS_SERVICE_ID))
+        print("EMAILJS_TEMPLATE_ID:", bool(EMAILJS_TEMPLATE_ID))
+        print("EMAILJS_PUBLIC_KEY:", bool(EMAILJS_PUBLIC_KEY))
+        print("EMAILJS_PRIVATE_KEY:", bool(EMAILJS_PRIVATE_KEY))
         return
 
     full_name = f"{doc.get('fname', '')} {doc.get('lname', '')}".strip()

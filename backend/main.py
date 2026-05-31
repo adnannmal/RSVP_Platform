@@ -54,6 +54,7 @@ EVENT_DATE = os.getenv("EVENT_DATE", "August 1, 2026")
 EVENT_TIME = os.getenv("EVENT_TIME", "6:00 PM - 9:00 PM")
 EVENT_START_UTC = os.getenv("EVENT_START_UTC", "20260801T220000Z")
 EVENT_END_UTC = os.getenv("EVENT_END_UTC", "20260802T010000Z")
+EVENT_CAPACITY = int(os.getenv("EVENT_CAPACITY", "1"))
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def est_now() -> str:
@@ -201,28 +202,45 @@ async def root():
 # ── Submit RSVP ────────────────────────────────────────────────────────────────
 @app.post("/submit")
 async def submit_rsvp(data: RSVPSubmit):
-    # Prevent duplicate submissions by email
     existing = await col.find_one({
         "$or": [
             {"email": data.email},
             {"hofstraId": data.hofstraId}
         ]
     })
+
     if existing:
-        raise HTTPException(status_code=409, detail="An RSVP already exists for this email address or Hofstra ID.")
+        raise HTTPException(
+            status_code=409,
+            detail="An RSVP already exists for this email address or Hofstra ID."
+        )
+
+    active_count = await col.count_documents({
+        "approvalStatus": {
+            "$in": ["pending", "approved"]
+        }
+    })
+
+    if active_count >= EVENT_CAPACITY:
+        approval_status = "waitlisted"
+        message = "RSVP submitted successfully. The event is currently full, so you have been placed on the waitlist."
+    else:
+        approval_status = "pending"
+        message = "RSVP submitted successfully. We will send a confirmation email with ticket details once approved."
 
     doc = data.model_dump()
     doc["submitTime"] = est_now()
-    doc["approvalStatus"] = "pending"
+    doc["approvalStatus"] = approval_status
     doc["emailSent"] = False
 
     result = await col.insert_one(doc)
     ticket_id = str(result.inserted_id)
 
     return {
-        "success": True, 
+        "success": True,
         "id": ticket_id,
-        "message": "RSVP submitted successfully. We will send a confirmation email with ticket details."
+        "approvalStatus": approval_status,
+        "message": message
     }
 
 # ── Get single ticket (for ticket scan) ───────────────────────────────────────────
@@ -308,7 +326,7 @@ async def export_csv(request: Request):
             doc.get("lname", ""),
             doc.get("email", ""),
             doc.get("hofstraId", ""),
-            doc.get("status", ""),
+            doc.get("approvalStatus", ""),
             g1 or "N/A",
             g2 or "N/A",
             doc.get("submitTime", ""),

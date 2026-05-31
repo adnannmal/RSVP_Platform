@@ -16,7 +16,7 @@ import csv
 import io
 import re
 import base64
-import httpx
+import httpx #type: ignore
 
 # ── App setup ──────────────────────────────────────────────────────────────────
 app = FastAPI(title="PSA RSVP Backend")

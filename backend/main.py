@@ -57,11 +57,11 @@ EVENT_END_UTC = os.getenv("EVENT_END_UTC", "20260802T010000Z")
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def est_now() -> str:
-    """Return current time formatted in US/Eastern (EST offset)."""
-    from datetime import timedelta
-    # Simple EST offset (UTC-5). For auto-DST use pytz/zoneinfo.
-    est = datetime.now(timezone.utc) - timedelta(hours=5)
-    return est.strftime("%Y-%m-%d %I:%M:%S %p EST")
+    """Return current time formatted in US/Eastern with daylight saving handled."""
+    from zoneinfo import ZoneInfo
+
+    eastern = datetime.now(ZoneInfo("America/New_York"))
+    return eastern.strftime("%Y-%m-%d %I:%M:%S %p %Z")
 
 def doc_to_dict(doc: dict) -> dict:
     """Convert MongoDB document to JSON-serialisable dict."""

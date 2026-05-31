@@ -1,13 +1,10 @@
 To do:
-- design ticket pdf 
 - make sure you can see what is in barcode
 - add pin to admin dashboard at the end
 - create program with barcode scanner to scan barcode and tell user whether or not it is a valid barcode and displays name and guests
 
 BACKEND To do:
 - Setup emailjs
-- Send calender invites (.cs files) with confirmation email
+- Send calender invites (.ics files) with confirmation email
 - Allow admin approval before sending tickets (status-based)
-- Use a secure backend to generate unique barcode
 - check if email, and id have already been used to prevent multiple submissions at once
-

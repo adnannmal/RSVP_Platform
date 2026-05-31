@@ -50,7 +50,7 @@
 
     <h1 class="text-4xl font-black tracking-tight text-emerald-900 md:text-5xl">You're on the list!</h1>
     <p class="text-md text-pakistan-gold font-bold tracking-widest uppercase mt-2">Hofstra Pakistani Students Association</p>
-    <div class="w-24 h-1 bg-pakistan-gold mx-auto mt-4 rounded-full"></div>
+    <div class="w-29 h-1 bg-pakistan-gold mx-auto mt-4 rounded-full"></div>
         
     <p class="text-gray-600 font-medium text-lg mt-4">A confirmation email is on its way.</p>
         
@@ -104,7 +104,7 @@
         JsBarcode("#barcode", id, {
           format: "CODE128",       // standard high-density alpha-numeric barcode architecture
           width: 4.2,              // line width scaling profiles
-          height: 95,              // barcode line vertical structural size
+          height: 150,              // barcode line vertical structural size
           displayValue: false,      // leaves verification text visible underneath code matrix
           text: `TICKET: ${id}`,   // appends tracking label styling text helper
           font: "monospace",       // clean matching font style
@@ -118,7 +118,6 @@
       // tracks high-quality programmatic document synthesis operations
         
       document.getElementById("downloadBtn").addEventListener("click", () => {
-        alert("Preparing your high-quality PDF...");
         fetch(`${API_BASE}/generate-pdf?id=${encodeURIComponent(id)}`)
 
         .then(response => {

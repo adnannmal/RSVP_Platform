@@ -8,12 +8,15 @@ from bson import ObjectId
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
 
 from datetime import datetime, timezone
 import os
 import csv
 import io
 import re
+import base64
+import httpx
 
 # ── App setup ──────────────────────────────────────────────────────────────────
 app = FastAPI(title="PSA RSVP Backend")
@@ -37,6 +40,18 @@ ADMIN_PIN  = os.getenv("ADMIN_PIN", "123456")   # Change via env var
 client = AsyncIOMotorClient(MONGO_URI, tls=True, tlsAllowInvalidCertificates=True)
 db     = client["rsvp_db"]
 col    = db["rsvps"]
+
+# ──EMAILJS configuration ────────────────────────────────────────────────────────────────────
+EMAILJS_SERVICE_ID = os.getenv("EMAILJS_SERVICE_ID")
+EMAILJS_TEMPLATE_ID = os.getenv("EMAILJS_TEMPLATE_ID")
+EMAILJS_PUBLIC_KEY = os.getenv("EMAILJS_PUBLIC_KEY")
+EMAILJS_PRIVATE_KEY = os.getenv("EMAILJS_PRIVATE_KEY")
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://psa-rsvp.vercel.app")
+EVENT_LOCATION = os.getenv("EVENT_LOCATION", "Hofstra University")
+EVENT_DATE = os.getenv("EVENT_DATE", "August 1, 2026")
+EVENT_START_UTC = os.getenv("EVENT_START_UTC", "20260801T220000Z")
+EVENT_END_UTC = os.getenv("EVENT_END_UTC", "20260802T010000Z")
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def est_now() -> str:
@@ -81,6 +96,90 @@ class RSVPSubmit(BaseModel):
 class PinVerify(BaseModel):
     pin: str
 
+#  ─── Email helper functions ────────────────────────────────────────────────────────────────────
+def escape_ics_text(text: str) -> str:
+    return (
+        str(text)
+        .replace("\\", "\\\\")
+        .replace(",", "\\,")
+        .replace(";", "\\;")
+        .replace("\n", "\\n")
+    )
+
+
+def build_calendar_invite(ticket_id: str, full_name: str) -> str:
+    event_title = "Hofstra PSA Event"
+    description = f"RSVP confirmed for {full_name}. Ticket ID: {ticket_id}"
+
+    now_utc = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+    ics = "\r\n".join([
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Hofstra PSA//RSVP Platform//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        f"UID:{ticket_id}@hofstrapsa",
+        f"DTSTAMP:{now_utc}",
+        f"DTSTART:{EVENT_START_UTC}",
+        f"DTEND:{EVENT_END_UTC}",
+        f"SUMMARY:{escape_ics_text(event_title)}",
+        f"LOCATION:{escape_ics_text(EVENT_LOCATION)}",
+        f"DESCRIPTION:{escape_ics_text(description)}",
+        "END:VEVENT",
+        "END:VCALENDAR",
+        ""
+    ])
+
+    return ics
+
+
+async def send_confirmation_email(doc: dict, ticket_id: str):
+    if not all([EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY]):
+        print("EmailJS is not fully configured. Skipping confirmation email.")
+        return
+
+    full_name = f"{doc.get('fname', '')} {doc.get('lname', '')}".strip()
+
+    guest1 = f"{doc.get('guest1fname', '')} {doc.get('guest1lname', '')}".strip()
+    guest2 = f"{doc.get('guest2fname', '')} {doc.get('guest2lname', '')}".strip()
+    guests = ", ".join([g for g in [guest1, guest2] if g]) or "N/A"
+
+    ticket_link = f"{FRONTEND_URL}/ticket.html?id={ticket_id}"
+
+    ics_content = build_calendar_invite(ticket_id, full_name)
+    ics_base64 = base64.b64encode(ics_content.encode("utf-8")).decode("utf-8")
+
+    payload = {
+        "service_id": EMAILJS_SERVICE_ID,
+        "template_id": EMAILJS_TEMPLATE_ID,
+        "user_id": EMAILJS_PUBLIC_KEY,
+        "accessToken": EMAILJS_PRIVATE_KEY,
+        "template_params": {
+            "to_email": doc.get("email", ""),
+            "to_name": full_name,
+            "name": full_name,
+            "email": doc.get("email", ""),
+            "guests": guests,
+            "ticket_link": ticket_link,
+            "event_location": EVENT_LOCATION,
+            "event_date": EVENT_DATE,
+            "calendar_file": ics_base64,
+        },
+    }
+
+    async with httpx.AsyncClient(timeout=20) as client:
+        response = await client.post(
+            "https://api.emailjs.com/api/v1.0/email/send",
+            json=payload,
+        )
+
+    if response.status_code != 200:
+        print("EmailJS error:", response.status_code, response.text)
+    else:
+        print("Confirmation email sent to", doc.get("email", ""))
+
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
 @app.get("/")
@@ -92,16 +191,24 @@ async def root():
 @app.post("/submit")
 async def submit_rsvp(data: RSVPSubmit):
     # Prevent duplicate submissions by email
-    existing = await col.find_one({"email": data.email})
+    existing = await col.find_one({
+        "$or": [
+            {"email": data.email},
+            {"hofstraId": data.hofstraId}
+        ]
+    })
     if existing:
-        raise HTTPException(status_code=409, detail="An RSVP already exists for this email address.")
+        raise HTTPException(status_code=409, detail="An RSVP already exists for this email address or Hofstra ID.")
 
     doc = data.model_dump()
     doc["submitTime"] = est_now()
 
     result = await col.insert_one(doc)
-    return {"success": True, "id": str(result.inserted_id)}
+    ticket_id = str(result.inserted_id)
 
+    await send_confirmation_email(doc, ticket_id)
+
+    return {"success": True, "id": ticket_id}
 
 # ── Get single ticket (for QR scan) ───────────────────────────────────────────
 @app.get("/ticket/{ticket_id}")
@@ -201,184 +308,224 @@ async def generate_pdf(id: str):
     width, height = letter
 
     # Colors
-    emerald_dark = "#064e3b"
     emerald_deep = "#022c22"
-    gold = "#d4af37"
+    emerald_dark = "#064e3b"
+    emerald_mid = "#047857"
     light_green = "#ecfdf5"
-    gray = "#4b5563"
+    gold = "#d4af37"
+    off_white = "#f9fafb"
     light_gray = "#e5e7eb"
+    gray = "#4b5563"
+    black_green = "#011c16"
+
+    # Event info
+    event_location = "Hofstra University"  # Change this to your real event location
+
+    # Logo path
+    logo_path = "Images/logo.png"
 
     # Data
     ticket_id = str(doc["_id"])
     full_name = f"{doc.get('fname', '')} {doc.get('lname', '')}".strip()
     email = doc.get("email", "")
-    hofstra_id = doc.get("hofstraId", "")
-    submit_time = doc.get("submitTime", "")
 
     guest1 = f"{doc.get('guest1fname', '')} {doc.get('guest1lname', '')}".strip()
     guest2 = f"{doc.get('guest2fname', '')} {doc.get('guest2lname', '')}".strip()
     guests = [g for g in [guest1, guest2] if g]
+    guest_text = ", ".join(guests) if guests else "N/A"
 
     pdf.setTitle("PSA Event Ticket")
 
-    # Page background
+    # Background
     pdf.setFillColor(emerald_deep)
     pdf.rect(0, 0, width, height, fill=True, stroke=False)
 
-    # Main ticket card
-    card_x = 0.75 * inch
+    # Main ticket card - crisp edges
+    card_x = 0.85 * inch
     card_y = 1.0 * inch
-    card_w = width - 1.5 * inch
+    card_w = width - 1.7 * inch
     card_h = height - 2.0 * inch
 
     pdf.setFillColor("white")
-    pdf.roundRect(card_x, card_y, card_w, card_h, 18, fill=True, stroke=False)
+    pdf.rect(card_x, card_y, card_w, card_h, fill=True, stroke=False)
 
-    # Header
-    pdf.setFillColor(emerald_dark)
-    pdf.setFont("Helvetica-Bold", 28)
-    pdf.drawCentredString(
-        width / 2,
-        card_y + card_h - 0.75 * inch,
-        "PSA EVENT TICKET"
-    )
+    # Outer gold border
+    pdf.setStrokeColor(gold)
+    pdf.setLineWidth(2)
+    pdf.rect(card_x, card_y, card_w, card_h, fill=False, stroke=True)
 
-    pdf.setFillColor(gold)
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawCentredString(
-        width / 2,
-        card_y + card_h - 1.05 * inch,
-        "HOFSTRA PAKISTANI STUDENTS ASSOCIATION"
-    )
-
-    # Divider under header
+    # Inner border
     pdf.setStrokeColor(light_gray)
     pdf.setLineWidth(1)
-    pdf.line(
-        card_x + 0.45 * inch,
-        card_y + card_h - 1.35 * inch,
-        card_x + card_w - 0.45 * inch,
-        card_y + card_h - 1.35 * inch
+    pdf.rect(
+        card_x + 0.18 * inch,
+        card_y + 0.18 * inch,
+        card_w - 0.36 * inch,
+        card_h - 0.36 * inch,
+        fill=False,
+        stroke=True,
     )
 
-    # Centered confirmation badge
-    badge_w = 2.6 * inch
-    badge_h = 0.5 * inch
-    badge_x = (width - badge_w) / 2
-    badge_y = card_y + card_h - 2.05 * inch
+    # Top header block
+    header_h = 1.55 * inch
+    pdf.setFillColor(off_white)
+    pdf.rect(card_x, card_y + card_h - header_h, card_w, header_h, fill=True, stroke=False)
 
-    pdf.setFillColor(light_green)
-    pdf.roundRect(badge_x, badge_y, badge_w, badge_h, 12, fill=True, stroke=False)
+    # Logo
+    try:
+        logo = ImageReader(logo_path)
+        logo_size = 0.72 * inch
+        pdf.drawImage(
+            logo,
+            width / 2 - logo_size / 2,
+            card_y + card_h - 0.78 * inch,
+            width=logo_size,
+            height=logo_size,
+            mask="auto",
+        )
+    except Exception:
+        # If logo is missing, the PDF still generates
+        pass
 
-    pdf.setFillColor(emerald_dark)
-    pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawCentredString(width / 2, badge_y + 0.18 * inch, "✓ RSVP Confirmed")
-
-    # Ticket details section
-    y = card_y + card_h - 2.75 * inch
-    label_x = card_x + 0.65 * inch
-    value_x = card_x + 2.15 * inch
-
-    def draw_field(label, value):
-        nonlocal y
-
-        pdf.setFillColor(gray)
-        pdf.setFont("Helvetica-Bold", 11)
-        pdf.drawString(label_x, y, label.upper())
-
-        pdf.setFillColor(emerald_deep)
-        pdf.setFont("Helvetica", 12)
-        pdf.drawString(value_x, y, value if value else "N/A")
-
-        y -= 0.42 * inch
-
-    draw_field("Name", full_name)
-    draw_field("Email", email)
-    draw_field("Hofstra ID", hofstra_id)
-    draw_field("Submitted", submit_time)
-
-    # Guests
-    pdf.setFillColor(gray)
-    pdf.setFont("Helvetica-Bold", 11)
-    pdf.drawString(label_x, y, "GUESTS")
-
+    # Header text
     pdf.setFillColor(emerald_deep)
-    pdf.setFont("Helvetica", 12)
-
-    if guests:
-        pdf.drawString(value_x, y, guests[0])
-        y -= 0.32 * inch
-
-        if len(guests) > 1:
-            pdf.drawString(value_x, y, guests[1])
-            y -= 0.32 * inch
-    else:
-        pdf.drawString(value_x, y, "N/A")
-        y -= 0.42 * inch
-
-    # Dashed divider
-    y -= 0.25 * inch
-    pdf.setDash(4, 4)
-    pdf.setStrokeColor(light_gray)
-    pdf.line(
-        card_x + 0.45 * inch,
-        y,
-        card_x + card_w - 0.45 * inch,
-        y
-    )
-    pdf.setDash()
-
-    # Ticket verification code
-    y -= 0.55 * inch
-    pdf.setFillColor(gray)
-    pdf.setFont("Helvetica-Bold", 11)
-    pdf.drawCentredString(width / 2, y, "TICKET VERIFICATION CODE")
-
-    y -= 0.45 * inch
-    pdf.setFillColor(emerald_deep)
-    pdf.setFont("Courier-Bold", 16)
-    pdf.drawCentredString(width / 2, y, ticket_id)
-
-    # Centered barcode-style visual
-    y -= 0.65 * inch
-    barcode_y = y
-    bar_height = 0.55 * inch
-
-    pdf.setFillColor(emerald_deep)
-
-    pattern = [
-        2, 1, 3, 1, 1, 2, 4, 1,
-        2, 3, 1, 1, 3, 2, 1, 4,
-        2, 1, 3, 1, 2, 2, 4, 1
-    ]
-
-    bars = pattern * 3
-    total_barcode_width = sum(bars) + (len(bars) - 1) * 2
-    barcode_x = (width - total_barcode_width) / 2
-
-    x = barcode_x
-
-    for i, bar_width in enumerate(bars):
-        if i % 2 == 0:
-            pdf.rect(x, barcode_y, bar_width, bar_height, fill=True, stroke=False)
-
-        x += bar_width + 2
-
-    # Footer note
-    pdf.setFillColor(gray)
-    pdf.setFont("Helvetica-Oblique", 10)
-    pdf.drawCentredString(
-        width / 2,
-        card_y + 0.55 * inch,
-        "One ticket is valid for the listed attendee and guests."
-    )
+    pdf.setFont("Helvetica-Bold", 25)
+    pdf.drawCentredString(width / 2, card_y + card_h - 1.08 * inch, "PSA EVENT TICKET")
 
     pdf.setFillColor(gold)
     pdf.setFont("Helvetica-Bold", 10)
     pdf.drawCentredString(
         width / 2,
-        card_y + 0.32 * inch,
-        "Please present this ticket at check-in."
+        card_y + card_h - 1.32 * inch,
+        "HOFSTRA PAKISTANI STUDENTS ASSOCIATION"
+    )
+
+    # Header bottom line
+    pdf.setStrokeColor(gold)
+    pdf.setLineWidth(1.2)
+    pdf.line(card_x, card_y + card_h - header_h, card_x + card_w, card_y + card_h - header_h)
+
+    # RSVP confirmed label
+    badge_w = 2.9 * inch
+    badge_h = 0.52 * inch
+    badge_x = (width - badge_w) / 2
+    badge_y = card_y + card_h - header_h - 0.75 * inch
+
+    pdf.setFillColor(light_green)
+    pdf.roundRect(badge_x, badge_y, badge_w, badge_h, 14, fill=True, stroke=False)
+
+    pdf.setStrokeColor(emerald_mid)
+    pdf.setLineWidth(0.7)
+    pdf.roundRect(badge_x, badge_y, badge_w, badge_h, 14, fill=False, stroke=True)
+
+    pdf.setFillColor(emerald_dark)
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawCentredString(width / 2, badge_y + 0.18 * inch, "✓ RSVP Confirmed")
+
+
+    # Details section
+    details_x = card_x + 0.55 * inch
+    details_y = badge_y - 2.0 * inch
+    details_w = card_w - 1.1 * inch
+    details_h = 1.55 * inch
+
+    pdf.setFillColor("white")
+    pdf.rect(details_x, details_y, details_w, details_h, fill=True, stroke=False)
+
+    pdf.setStrokeColor(light_gray)
+    pdf.setLineWidth(1)
+    pdf.rect(details_x, details_y, details_w, details_h, fill=False, stroke=True)
+
+    label_x = details_x + 0.28 * inch
+    value_x = details_x + 1.35 * inch
+    y = details_y + details_h - 0.38 * inch
+
+    def draw_field(label, value):
+        nonlocal y
+
+        pdf.setFillColor(gray)
+        pdf.setFont("Helvetica-Bold", 9)
+        pdf.drawString(label_x, y, label.upper())
+
+        pdf.setFillColor(black_green)
+        pdf.setFont("Helvetica-Bold", 11)
+        pdf.drawString(value_x, y, value if value else "N/A")
+
+        y -= 0.34 * inch
+
+    draw_field("Name", full_name)
+    draw_field("Email", email)
+    draw_field("Guests", guest_text)
+    draw_field("Location", event_location)
+
+    # Divider
+    divider_y = details_y - 0.55 * inch
+    pdf.setStrokeColor(light_gray)
+    pdf.setLineWidth(1)
+    pdf.line(card_x + 0.55 * inch, divider_y, card_x + card_w - 0.55 * inch, divider_y)
+
+    # Barcode title
+    barcode_label_y = divider_y - 0.45 * inch
+
+    pdf.setFillColor(gray)
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawCentredString(width / 2, barcode_label_y, "CHECK-IN BARCODE")
+
+    # Barcode white container
+    barcode_box_w = card_w - 1.2 * inch
+    barcode_box_h = 1.25 * inch
+    barcode_box_x = (width - barcode_box_w) / 2
+    barcode_box_y = barcode_label_y - 1.45 * inch
+
+    pdf.setFillColor(off_white)
+    pdf.rect(barcode_box_x, barcode_box_y, barcode_box_w, barcode_box_h, fill=True, stroke=False)
+
+    pdf.setStrokeColor(light_gray)
+    pdf.setLineWidth(1)
+    pdf.rect(barcode_box_x, barcode_box_y, barcode_box_w, barcode_box_h, fill=False, stroke=True)
+
+    # Barcode-style visual, centered and crisp
+    pattern = [
+        3, 1, 1, 2, 4, 1, 2, 3,
+        1, 1, 3, 2, 1, 4, 2, 1,
+        3, 1, 2, 2, 4, 1, 1, 3
+    ]
+
+    bars = pattern * 3
+    gap = 2.1
+    total_barcode_width = sum(bars) + (len(bars) - 1) * gap
+    barcode_x = (width - total_barcode_width) / 2
+    barcode_y = barcode_box_y + 0.38 * inch
+    bar_height = 0.58 * inch
+
+    pdf.setFillColor(black_green)
+
+    x = barcode_x
+    for i, bar_width in enumerate(bars):
+        if i % 2 == 0:
+            pdf.rect(x, barcode_y, bar_width, bar_height, fill=True, stroke=False)
+        x += bar_width + gap
+
+    # Ticket ID under barcode
+    pdf.setFillColor(black_green)
+    pdf.setFont("Courier-Bold", 9)
+    pdf.drawCentredString(width / 2, barcode_box_y + 0.18 * inch, ticket_id)
+
+    # Footer
+    pdf.setFillColor(gray)
+    pdf.setFont("Helvetica", 9)
+    pdf.drawCentredString(
+        width / 2,
+        card_y + 0.48 * inch,
+        "This ticket is valid for the listed attendee and guests only."
+    )
+
+    pdf.setFillColor(gold)
+    pdf.setFont("Helvetica-Bold", 9)
+    pdf.drawCentredString(
+        width / 2,
+        card_y + 0.28 * inch,
+        "Please present this ticket at event check-in."
     )
 
     pdf.showPage()

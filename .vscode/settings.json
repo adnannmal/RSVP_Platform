@@ -1,3 +1,4 @@
 {
-    "livePreview.defaultPreviewPath": "/success.html"
+    "livePreview.defaultPreviewPath": "/success.html",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }

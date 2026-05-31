@@ -49,7 +49,9 @@ EMAILJS_PRIVATE_KEY = os.getenv("EMAILJS_PRIVATE_KEY")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://psa-rsvp.vercel.app")
 EVENT_LOCATION = os.getenv("EVENT_LOCATION", "Hofstra University")
+EVENT_LOCATION_LINK = os.getenv("EVENT_LOCATION_LINK","https://www.google.com/maps/search/?api=1&query=Hofstra%20University")
 EVENT_DATE = os.getenv("EVENT_DATE", "August 1, 2026")
+EVENT_TIME = os.getenv("EVENT_TIME", "6:00 PM - 9:00 PM")
 EVENT_START_UTC = os.getenv("EVENT_START_UTC", "20260801T220000Z")
 EVENT_END_UTC = os.getenv("EVENT_END_UTC", "20260802T010000Z")
 
@@ -161,15 +163,14 @@ async def send_confirmation_email(doc: dict, ticket_id: str):
         "user_id": EMAILJS_PUBLIC_KEY,
         "accessToken": EMAILJS_PRIVATE_KEY,
         "template_params": {
-            "to_email": doc.get("email", ""),
-            "to_name": full_name,
             "name": full_name,
             "email": doc.get("email", ""),
             "guests": guests,
             "ticket_link": ticket_link,
             "event_location": EVENT_LOCATION,
+            "event_location_link": EVENT_LOCATION_LINK,
             "event_date": EVENT_DATE,
-            "calendar_file": ics_base64,
+            "event_time": EVENT_TIME,
         },
     }
 

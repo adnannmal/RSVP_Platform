@@ -54,79 +54,124 @@
     </div>
 
     <script>
-        let data;
+        const API_BASE = "https://rsvp-backend-5b7q.onrender.com";
 
-        try {
+        let ticketData = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
             const query = new URLSearchParams(window.location.search);
-            data = JSON.parse(decodeURIComponent(query.get("data")));
+            const id = query.get("id");
 
-            console.log("Decoded data:", data);
-
-            // check ticket expiration
-
-            const dateNow = new Date();
-            const ticketExpire = new Date(data.ticketExpire);
-
-            if (dateNow > ticketExpire) {
-                throw new Error("Ticket expired");
+            if (!id) {
+                document.body.innerHTML = `
+                    <p class="text-red-700 text-center font-bold">
+                        ❌ Invalid ticket link.
+                    </p>
+                `;
+                return;
             }
 
-            console.log("Valid ticket");
-        }
-        catch (err) {
-            document.body.innerHTML = `
-                <div class="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
-                    <h1 class="text-3xl font-bold text-red-700 mb-2">❌ Ticket Invalid</h1>
-                    <p class="text-gray-700">This ticket has expired or could not be loaded.</p>
-                </div>
-            `;
-            throw err;
-        }
+            try {
+                const response = await fetch(`${API_BASE}/ticket/${encodeURIComponent(id)}`);
+                const result = await response.json();
 
-        const ticketName = document.getElementById("ticketName");
-        const guestSection = document.getElementById("guestSection");
-        const guestList = document.getElementById("guestList");
-        const ticketCodeText = document.getElementById("ticketCodeText");
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.error || result.detail || "Ticket not found.");
+                }
 
-        ticketName.innerText = `${data.fname} ${data.lname}`;
+                ticketData = result.ticket;
+            }
+            catch (err) {
+                console.error(err);
 
-        // build guest list conditionally
+                document.body.innerHTML = `
+                    <p class="text-red-700 text-center font-bold">
+                        ❌ ${err.message || "This ticket is invalid or expired."}
+                    </p>
+                `;
+                return;
+            }
 
-        if (data.guest1fname || data.guest1lname) {
-            const li = document.createElement("li");
-            li.innerText = `${data.guest1fname} ${data.guest1lname}`;
-            guestList.appendChild(li);
-        }
+            const submitPin = document.getElementById("submitPin");
 
-        if (data.guest2fname || data.guest2lname) {
-            const li = document.createElement("li");
-            li.innerText = `${data.guest2fname} ${data.guest2lname}`;
-            guestList.appendChild(li);
-        }
+            if (submitPin) {
+                submitPin.addEventListener("click", checkPass);
+            }
 
-        if (guestList.children.length > 0) {
-            guestSection.classList.remove("hidden");
-        }
+            const passInput = document.getElementById("pass");
 
-        // create a short barcode value for check-in scanning
-
-        const ticketCode = `${data.hofstraId}-${data.fname}-${data.lname}`
-            .replace(/\s+/g, "")
-            .toUpperCase();
-
-        ticketCodeText.innerText = ticketCode;
-
-        // render barcode for check-in scanning
-
-        JsBarcode("#barcode", ticketCode, {
-            format: "CODE128",
-            lineColor: "#000",
-            width: 2,
-            height: 80,
-            displayValue: true,
-            fontSize: 14,
-            margin: 10
+            if (passInput) {
+                passInput.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        checkPass();
+                    }
+                });
+            }
         });
+
+        async function checkPass() {
+            const input = document.getElementById("pass");
+            const error = document.getElementById("error");
+            const authBox = document.getElementById("authUser");
+            const ticketBox = document.getElementById("ticket");
+
+            if (!input || !ticketBox || !ticketData) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/verify-pin`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ pin: input.value.trim() }),
+                });
+
+                const result = await response.json();
+
+                if (!result.ok) {
+                    error?.classList.remove("hidden");
+                    return;
+                }
+
+                authBox?.classList.add("hidden");
+
+                let guestHTML = "";
+
+                if (ticketData.guest1fname || ticketData.guest1lname) {
+                    guestHTML += `<li>${ticketData.guest1fname || ""} ${ticketData.guest1lname || ""}</li>`;
+                }
+
+                if (ticketData.guest2fname || ticketData.guest2lname) {
+                    guestHTML += `<li>${ticketData.guest2fname || ""} ${ticketData.guest2lname || ""}</li>`;
+                }
+
+                ticketBox.innerHTML = `
+                    <div class="space-y-3 text-left">
+                        <h2 class="text-2xl font-bold text-green-700 mb-2">🎟️ Event Ticket</h2>
+
+                        <p><strong>Full Name:</strong> ${ticketData.fname || ""} ${ticketData.lname || ""}</p>
+                        <p><strong>Email:</strong> ${ticketData.email || ""}</p>
+
+                        ${
+                            guestHTML
+                                ? `<div>
+                                    <p class="font-semibold">Guests:</p>
+                                    <ul class="list-disc list-inside text-gray-700">${guestHTML}</ul>
+                                </div>`
+                                : `<p><strong>Guests:</strong> N/A</p>`
+                        }
+                    </div>
+                `;
+
+                ticketBox.classList.remove("hidden");
+            }
+            catch (err) {
+                console.error(err);
+                alert("Error verifying PIN. Please try again.");
+            }
+        }
+
+        window.checkPass = checkPass;
     </script>
 </body>
 </html>

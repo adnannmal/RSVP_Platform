@@ -75,10 +75,25 @@
 
         <!-- RSVP Summary and Table -->
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-pakistan-gold">
                 <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Total RSVPs</p>
                 <p id="totalCount" class="text-4xl font-black text-emerald-900 mt-1">0</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-blue-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Waitlisted</p>
+                <p id="waitlistCount" class="text-4xl font-black text-blue-800 mt-1">0</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-red-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Rejected</p>
+                <p id="rejectedCount" class="text-4xl font-black text-red-800 mt-1">0</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-green-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Approved</p>
+                <p id="approvedCount" class="text-4xl font-black text-green-800 mt-1">0</p>
             </div>
         </div>
 
@@ -116,6 +131,9 @@
 
     const tableBody = document.getElementById("rsvpTableBody");
     const totalCountEl = document.getElementById("totalCount");
+    const waitlistCountEl = document.getElementById("waitlistCount");
+    const rejectedCountEl = document.getElementById("rejectedCount");
+    const approvedCountEl = document.getElementById("approvedCount");
     const exportBtn = document.getElementById("exportCSV");
     const clearBtn  = document.getElementById("clearAll");
 
@@ -136,6 +154,9 @@
         pinError.classList.add("hidden");
         tableBody.innerHTML = "";
         totalCountEl.textContent = "0";
+        waitlistCountEl.textContent = "0";
+        rejectedCountEl.textContent = "0";  
+        approvedCountEl.textContent = "0";
     }
 
     async function checkAdminPin() { // Send PIN to backend for verification
@@ -252,10 +273,20 @@
             const list = await r.json();
 
             if (Array.isArray(list)) {
+                const waitlisted = list.filter(e => e.approvalStatus === "waitlisted").length;
+                const rejected = list.filter(e => e.approvalStatus === "rejected").length;
+                const approved = list.filter(e => e.approvalStatus === "approved").length;
+
                 totalCountEl.textContent = list.length;
+                waitlistCountEl.textContent = waitlisted;
+                rejectedCountEl.textContent = rejected;
+                approvedCountEl.textContent = approved;
             } 
             else {
                 totalCountEl.textContent = "0";
+                waitlistCountEl.textContent = "0";
+                rejectedCountEl.textContent = "0";
+                approvedCountEl.textContent = "0";
             }
 
             if (!Array.isArray(list) || list.length === 0) {

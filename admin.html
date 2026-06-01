@@ -61,6 +61,9 @@
                 <p class="text-pakistan-gold font-bold tracking-widest uppercase text-sm mt-1">Manage and export all active RSVPs</p>
             </div>
             <div class="flex gap-3">
+                <div class="bg-white/95 text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md border-t-4 border-pakistan-gold">
+                    Total Guests: <span id="guestCount">0</span>
+                </div>
                 <button id="exportCSV" class="bg-white text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md hover:bg-emerald-50 transition-all duration-300 flex items-center gap-2 active:scale-95">
                     <span>Export CSV</span>
                 </button>
@@ -94,6 +97,11 @@
             <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-green-400">
                 <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Approved</p>
                 <p id="approvedCount" class="text-4xl font-black text-green-800 mt-1">0</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-yellow-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Pending</p>
+                <p id="pendingCount" class="text-4xl font-black text-yellow-700 mt-1">0</p>
             </div>
         </div>
 
@@ -130,10 +138,12 @@
     const logoutBtn = document.getElementById("logoutAdmin");
 
     const tableBody = document.getElementById("rsvpTableBody");
+    const guestCountEl = document.getElementById("guestCount");
     const totalCountEl = document.getElementById("totalCount");
     const waitlistCountEl = document.getElementById("waitlistCount");
     const rejectedCountEl = document.getElementById("rejectedCount");
     const approvedCountEl = document.getElementById("approvedCount");
+    const pendingCountEl = document.getElementById("pendingCount");
     const exportBtn = document.getElementById("exportCSV");
     const clearBtn  = document.getElementById("clearAll");
 
@@ -154,9 +164,11 @@
         pinError.classList.add("hidden");
         tableBody.innerHTML = "";
         totalCountEl.textContent = "0";
+        pendingCountEl.textContent = "0";
         waitlistCountEl.textContent = "0";
         rejectedCountEl.textContent = "0";  
         approvedCountEl.textContent = "0";
+        guestCountEl.textContent = "0";
     }
 
     async function checkAdminPin() { // Send PIN to backend for verification
@@ -273,20 +285,39 @@
             const list = await r.json();
 
             if (Array.isArray(list)) {
+                const pending = list.filter(e => !e.approvalStatus || e.approvalStatus === "pending").length;
                 const waitlisted = list.filter(e => e.approvalStatus === "waitlisted").length;
-                const rejected = list.filter(e => e.approvalStatus === "rejected").length;
                 const approved = list.filter(e => e.approvalStatus === "approved").length;
+                const rejected = list.filter(e => e.approvalStatus === "rejected").length;
+
+                const totalGuests = list.reduce((count, e) => {
+                    let guests = 0;
+
+                    if (e.guest1fname || e.guest1lname) {
+                        guests++;
+                    }
+
+                    if (e.guest2fname || e.guest2lname) {
+                        guests++;
+                    }
+
+                    return count + guests;
+                }, 0);
 
                 totalCountEl.textContent = list.length;
+                guestCountEl.textContent = totalGuests;
+                pendingCountEl.textContent = pending;
                 waitlistCountEl.textContent = waitlisted;
-                rejectedCountEl.textContent = rejected;
                 approvedCountEl.textContent = approved;
-            } 
+                rejectedCountEl.textContent = rejected;
+            }
             else {
                 totalCountEl.textContent = "0";
+                guestCountEl.textContent = "0";
+                pendingCountEl.textContent = "0";
                 waitlistCountEl.textContent = "0";
-                rejectedCountEl.textContent = "0";
                 approvedCountEl.textContent = "0";
+                rejectedCountEl.textContent = "0";
             }
 
             if (!Array.isArray(list) || list.length === 0) {

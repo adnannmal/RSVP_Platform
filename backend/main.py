@@ -75,6 +75,17 @@ def require_admin(request: Request):
     if pin != ADMIN_PIN:
         raise HTTPException(status_code=401, detail="Unauthorized admin access.")
 
+def attendee_count_from_doc(doc: dict) -> int:
+    count = 1  # main RSVP person
+
+    if doc.get("guest1fname") or doc.get("guest1lname"):
+        count += 1
+
+    if doc.get("guest2fname") or doc.get("guest2lname"):
+        count += 1
+
+    return count
+
 # ── Schemas ────────────────────────────────────────────────────────────────────
 class RSVPSubmit(BaseModel):
     fname:       str
@@ -215,23 +226,30 @@ async def submit_rsvp(data: RSVPSubmit):
             detail="An RSVP already exists for this email address or Hofstra ID."
         )
 
-    active_count = await col.count_documents({
+    # Count total attendees already taking capacity
+    active_attendee_count = 0
+
+    async for existing_doc in col.find({
         "approvalStatus": {
             "$in": ["pending", "approved"]
         }
-    })
+    }):
+        active_attendee_count += attendee_count_from_doc(existing_doc)
 
-    if active_count >= EVENT_CAPACITY:
+    doc = data.model_dump()
+    new_attendee_count = attendee_count_from_doc(doc)
+
+    if active_attendee_count + new_attendee_count > EVENT_CAPACITY:
         approval_status = "waitlisted"
         message = "RSVP submitted successfully. The event is currently full, so you have been placed on the waitlist."
     else:
         approval_status = "pending"
         message = "RSVP submitted successfully. We will send a confirmation email with ticket details once approved."
 
-    doc = data.model_dump()
     doc["submitTime"] = est_now()
     doc["approvalStatus"] = approval_status
     doc["emailSent"] = False
+    doc["attendeeCount"] = new_attendee_count
 
     result = await col.insert_one(doc)
     ticket_id = str(result.inserted_id)
@@ -240,6 +258,7 @@ async def submit_rsvp(data: RSVPSubmit):
         "success": True,
         "id": ticket_id,
         "approvalStatus": approval_status,
+        "attendeeCount": new_attendee_count,
         "message": message
     }
 

@@ -62,7 +62,7 @@
             </div>
             <div class="flex gap-3">
                 <div class="bg-white/95 text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md border-t-4 border-pakistan-gold">
-                    Total Guests: <span id="guestCount">0</span>
+                    Total Attending: <span id="guestCount">0</span>
                 </div>
                 <button id="exportCSV" class="bg-white text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md hover:bg-emerald-50 transition-all duration-300 flex items-center gap-2 active:scale-95">
                     <span>Export CSV</span>
@@ -291,17 +291,21 @@
                 const rejected = list.filter(e => e.approvalStatus === "rejected").length;
 
                 const totalGuests = list.reduce((count, e) => {
-                    let guests = 0;
+                    if (e.approvalStatus !== "approved") {
+                        return count;
+                    }
+
+                    let attendees = 1; // approved RSVP person
 
                     if (e.guest1fname || e.guest1lname) {
-                        guests++;
+                        attendees++;
                     }
 
                     if (e.guest2fname || e.guest2lname) {
-                        guests++;
+                        attendees++;
                     }
 
-                    return count + guests;
+                    return count + attendees;
                 }, 0);
 
                 totalCountEl.textContent = list.length;

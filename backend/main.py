@@ -250,6 +250,9 @@ async def submit_rsvp(data: RSVPSubmit):
     doc["approvalStatus"] = approval_status
     doc["emailSent"] = False
     doc["attendeeCount"] = new_attendee_count
+    doc["attended"] = False
+    doc["scanCount"] = 0
+    doc["checkedInTime"] = ""
 
     result = await col.insert_one(doc)
     ticket_id = str(result.inserted_id)
@@ -659,6 +662,58 @@ async def approve_rsvp(ticket_id: str, request: Request):
     return {
         "success": True,
         "message": "RSVP approved and confirmation email sent."
+    }
+
+    # ── Scan Ticket / Mark Attendance ──────────────────────────────────────────────
+@app.post("/scan/{ticket_id}")
+async def scan_ticket(ticket_id: str, request: Request):
+    require_admin(request)
+
+    try:
+        oid = ObjectId(ticket_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ticket ID format.")
+
+    doc = await col.find_one({"_id": oid})
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Ticket not found.")
+
+    if doc.get("approvalStatus") != "approved":
+        raise HTTPException(
+            status_code=403,
+            detail="This RSVP has not been approved yet."
+        )
+
+    if doc.get("attended") is True:
+        return {
+            "success": False,
+            "alreadyScanned": True,
+            "message": "This ticket has already been scanned.",
+            "checkedInTime": doc.get("checkedInTime", ""),
+            "ticket": doc_to_dict(doc)
+        }
+
+    await col.update_one(
+        {"_id": oid},
+        {
+            "$set": {
+                "attended": True,
+                "checkedInTime": est_now()
+            },
+            "$inc": {
+                "scanCount": 1
+            }
+        }
+    )
+
+    updated_doc = await col.find_one({"_id": oid})
+
+    return {
+        "success": True,
+        "alreadyScanned": False,
+        "message": "Ticket scanned successfully. Attendance marked.",
+        "ticket": doc_to_dict(updated_doc)
     }
 
 # ── Reject RSVP ─────────────────────────────────────────

@@ -1,1 +1,346 @@
 <!-- Analytics Dashboard for post event data visualization -->
+
+<!DOCTYPE html> <!--recognizes file type as HTML-->
+
+<html lang="en"> <!--sets language to english-->
+
+<head>
+    <meta charset="UTF-8" /> <!--tells web browser to interpret doc using UTF-8 encoding-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
+    <title>PSA Attendance Analytics</title> <!--Title shown in browser tab-->
+    <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
+    <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            800: '#064e3b',
+                            900: '#022c22',
+                        },
+                        pakistan: {
+                            dark: '#004b23',
+                            light: '#007200',
+                            gold: '#d4af37'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-emerald-800 min-h-screen p-4 md:p-10 font-sans text-slate-100 relative overflow-x-hidden select-none">
+
+    <!-- Analytics Dashboard -->
+
+    <div id="analyticsDashboard" class="max-w-7xl mx-auto relative z-10 animate-fade-in">
+
+        <!-- Dashboard Header -->
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-white/10 pb-6">
+            <div>
+                <h1 class="text-4xl font-black text-white tracking-tight">Attendance Analytics</h1>
+                <p class="text-pakistan-gold font-bold tracking-widest uppercase text-sm mt-1">Track barcode scans and check-ins</p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <a href="admin.html" class="bg-white text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md hover:bg-emerald-50 transition-all duration-300 active:scale-95">
+                    Back to Admin
+                </a>
+
+                <button id="refreshAnalytics" class="bg-purple-600 hover:bg-purple-700 text-white font-black px-6 py-2.5 rounded-xl shadow-md transition-all duration-300 active:scale-95">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Analytics Cards -->
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-pakistan-gold">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Approved Tickets</p>
+                <p id="approvedCount" class="text-4xl font-black text-emerald-900 mt-1">0</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-purple-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Checked In</p>
+                <p id="checkedInCount" class="text-4xl font-black text-purple-800 mt-1">0</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-gray-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Not Checked In</p>
+                <p id="notCheckedInCount" class="text-4xl font-black text-gray-800 mt-1">0</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-green-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Attendance Rate</p>
+                <p id="attendanceRate" class="text-4xl font-black text-green-800 mt-1">0%</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border-t-4 border-blue-400">
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Total Attendees</p>
+                <p id="totalAttendeesCount" class="text-4xl font-black text-blue-800 mt-1">0</p>
+            </div>
+        </div>
+
+        <!-- Attendance Progress -->
+
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-pakistan-gold p-6 mb-8">
+            <div class="flex justify-between items-center mb-3">
+                <p class="text-emerald-900 font-black uppercase tracking-widest text-sm">Check-In Progress</p>
+                <p id="progressText" class="text-gray-500 font-bold text-sm">0 of 0 checked in</p>
+            </div>
+
+            <div class="w-full bg-gray-200 rounded-full h-5 overflow-hidden">
+                <div id="progressBar" class="bg-purple-600 h-5 rounded-full transition-all duration-500" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Attendance Table -->
+
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border-t-4 border-pakistan-gold">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-emerald-50/70 border-b border-emerald-100">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Attendee</th>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Guests</th>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Ticket Status</th>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Attendance</th>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Checked-In Time</th>
+                            <th class="px-6 py-4 text-xs font-black text-emerald-900 uppercase tracking-widest">Scan Count</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="analyticsTableBody" class="divide-y divide-gray-100 text-gray-700">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const API_BASE = "https://rsvp-backend-5b7q.onrender.com";
+
+    const analyticsDashboard = document.getElementById("analyticsDashboard");
+    const refreshBtn = document.getElementById("refreshAnalytics");
+
+    const approvedCountEl = document.getElementById("approvedCount");
+    const checkedInCountEl = document.getElementById("checkedInCount");
+    const notCheckedInCountEl = document.getElementById("notCheckedInCount");
+    const attendanceRateEl = document.getElementById("attendanceRate");
+    const totalAttendeesCountEl = document.getElementById("totalAttendeesCount");
+    const progressTextEl = document.getElementById("progressText");
+    const progressBarEl = document.getElementById("progressBar");
+    const tableBody = document.getElementById("analyticsTableBody");
+
+    let adminPin = sessionStorage.getItem("adminPin") || "";
+
+    function resetAnalytics() {
+        approvedCountEl.textContent = "0";
+        checkedInCountEl.textContent = "0";
+        notCheckedInCountEl.textContent = "0";
+        attendanceRateEl.textContent = "0%";
+        totalAttendeesCountEl.textContent = "0";
+        progressTextEl.textContent = "0 of 0 checked in";
+        progressBarEl.style.width = "0%";
+        tableBody.innerHTML = "";
+    }
+
+    async function checkAdminPin() {
+        const pin = pinInput.value.trim();
+        pinError.classList.add("hidden");
+
+        if (!pin) {
+            pinError.textContent = "Please enter the admin PIN.";
+            pinError.classList.remove("hidden");
+            return;
+        }
+
+        try {
+            const r = await fetch(`${API_BASE}/verify-pin`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ pin })
+            });
+
+            const data = await r.json();
+
+            if (!r.ok || (!data.ok && !data.success)) {
+                pinError.textContent = "Incorrect PIN. Try again.";
+                pinError.classList.remove("hidden");
+                return;
+            }
+
+            adminPin = pin;
+            sessionStorage.setItem("adminPin", pin);
+            showDashboard();
+        }
+        catch (err) {
+            console.error(err);
+            pinError.textContent = "Could not connect to server. Try again.";
+            pinError.classList.remove("hidden");
+        }
+    }
+
+    async function loadAnalytics() {
+        tableBody.innerHTML = "";
+
+        try {
+            const r = await fetch(`${API_BASE}/rsvps`, {
+                headers: {
+                    "x-admin-pin": adminPin
+                }
+            });
+
+            if (!r.ok) {
+                throw new Error("Unauthorized or failed to load analytics.");
+            }
+
+            const list = await r.json();
+
+            if (!Array.isArray(list)) {
+                resetAnalytics();
+                return;
+            }
+
+            const approvedList = list.filter(e => e.approvalStatus === "approved");
+            const checkedInList = approvedList.filter(e => e.attended === true);
+            const notCheckedInList = approvedList.filter(e => e.attended !== true);
+
+            const approvedCount = approvedList.length;
+            const checkedInCount = checkedInList.length;
+            const notCheckedInCount = notCheckedInList.length;
+
+            const attendanceRate = approvedCount > 0
+                ? Math.round((checkedInCount / approvedCount) * 100)
+                : 0;
+
+            const totalAttendees = approvedList.reduce((count, e) => {
+                let attendees = 1;
+
+                if (e.guest1fname || e.guest1lname) {
+                    attendees++;
+                }
+
+                if (e.guest2fname || e.guest2lname) {
+                    attendees++;
+                }
+
+                return count + attendees;
+            }, 0);
+
+            approvedCountEl.textContent = approvedCount;
+            checkedInCountEl.textContent = checkedInCount;
+            notCheckedInCountEl.textContent = notCheckedInCount;
+            attendanceRateEl.textContent = `${attendanceRate}%`;
+            totalAttendeesCountEl.textContent = totalAttendees;
+            progressTextEl.textContent = `${checkedInCount} of ${approvedCount} checked in`;
+            progressBarEl.style.width = `${attendanceRate}%`;
+
+            renderTable(approvedList);
+        }
+        catch (err) {
+            console.error(err);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-10 text-center text-red-600 font-bold">
+                        Failed to load analytics. Please log in again.
+                    </td>
+                </tr>
+            `;
+
+            sessionStorage.removeItem("adminPin");
+        }
+    }
+
+    function renderTable(list) {
+        if (!Array.isArray(list) || list.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-10 text-center italic text-gray-400">
+                        No approved tickets yet.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        for (const e of list) {
+            const guests = [];
+
+            if (e.guest1fname || e.guest1lname) {
+                guests.push(`${e.guest1fname || ""} ${e.guest1lname || ""}`.trim());
+            }
+
+            if (e.guest2fname || e.guest2lname) {
+                guests.push(`${e.guest2fname || ""} ${e.guest2lname || ""}`.trim());
+            }
+
+            const attendanceBadge = e.attended === true
+                ? `<span class="bg-purple-100 text-purple-800 border border-purple-200 px-3 py-1 rounded-lg text-xs font-black uppercase">Checked In</span>`
+                : `<span class="bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1 rounded-lg text-xs font-black uppercase">Not Checked In</span>`;
+
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-emerald-50/30 transition-colors duration-200";
+
+            tr.innerHTML = `
+                <td class="px-6 py-4">
+                    <div class="font-black text-emerald-900 text-lg">${(e.fname || "")} ${(e.lname || "")}</div>
+                    <div class="text-xs text-gray-400 font-medium">${e.email || ""}</div>
+                </td>
+
+                <td class="px-6 py-4">
+                    ${guests.length > 0
+                        ? `<div class="flex flex-col gap-1.5">${guests.map(g => `<span class="bg-emerald-50 border border-emerald-100 text-emerald-900 px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wide w-max shadow-sm">${g}</span>`).join("")}</div>`
+                        : `<span class="text-gray-400 italic text-sm">None</span>`
+                    }
+                </td>
+
+                <td class="px-6 py-4">
+                    <span class="bg-green-100 text-green-800 border border-green-200 px-3 py-1 rounded-lg text-xs font-black uppercase">Approved</span>
+                </td>
+
+                <td class="px-6 py-4">${attendanceBadge}</td>
+
+                <td class="px-6 py-4 text-sm font-bold text-gray-500">
+                    ${e.checkedInTime || "N/A"}
+                </td>
+
+                <td class="px-6 py-4 text-sm font-black text-gray-600">
+                    ${e.scanCount || 0}
+                </td>
+            `;
+
+            tableBody.appendChild(tr);
+        }
+    }
+    refreshBtn?.addEventListener("click", loadAnalytics);
+
+    window.addEventListener("DOMContentLoaded", function () {
+        if (!adminPin) {
+            document.body.innerHTML = `
+                <div class="min-h-screen flex items-center justify-center p-6 bg-emerald-800">
+                    <div class="bg-white/95 text-center p-8 rounded-2xl shadow-2xl border-t-4 border-pakistan-gold max-w-md w-full">
+                        <h1 class="text-3xl font-black text-emerald-900 mb-3">Admin Login Required</h1>
+                        <p class="text-gray-600 font-bold mb-6">Please log in through the admin dashboard first.</p>
+                        <a href="admin.html" class="inline-block bg-emerald-900 text-white font-black px-6 py-3 rounded-xl hover:bg-emerald-800 transition-all">
+                            Go to Admin Login
+                        </a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        loadAnalytics();
+    });
+</script>
+</body>
+</html>

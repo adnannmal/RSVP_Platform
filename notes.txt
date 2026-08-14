@@ -2,9 +2,7 @@ To do:
 - fix ticket.html
 - make sure you can see what is in barcode
 - create program with barcode scanner to scan barcode and tell user whether or not it is a valid barcode and displays name and guests
-- waitlist system
 - attendance analytics dashboard
 
 BACKEND To do:
 - Send calender invites (.ics files) with confirmation email (need emailjs subscirption)
-- Allow admin approval before sending tickets (status-based)

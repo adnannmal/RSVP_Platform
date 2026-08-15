@@ -1,63 +1,354 @@
-# PSA RSVP Backend
+# ⚡ PSA RSVP Backend
 
-FastAPI + MongoDB backend for the Hofstra PSA RSVP Platform.
+> FastAPI backend for the Hofstra PSA RSVP Platform.
 
-## Endpoints
+> Handles RSVP submissions, approval status, waitlist capacity, EmailJS ticket delivery, PDF tickets, admin data access, and attendance tracking.
 
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/` | Health check |
-| POST | `/submit` | Submit a new RSVP |
-| GET | `/ticket/{id}` | Fetch ticket data (QR scan) |
-| POST | `/verify-pin` | Verify admin PIN |
-| GET | `/rsvps` | List all RSVPs (admin) |
-| DELETE | `/rsvps` | Clear all RSVPs (admin) |
-| GET | `/export.csv` | Download CSV of all RSVPs |
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab?style=for-the-badge)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-22c55e?style=for-the-badge)
+![Render](https://img.shields.io/badge/Hosted%20On-Render-7c3aed?style=for-the-badge)
+![EmailJS](https://img.shields.io/badge/Email-EmailJS-f97316?style=for-the-badge)
 
-## Local Setup
+---
 
-```bash
-# 1. Clone and enter the folder
-cd rsvp_backend
+## 🧠 Backend Responsibilities
 
-# 2. Create a virtual environment
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+The backend is the source of truth for the RSVP platform. It manages:
 
-# 3. Install dependencies
-pip install -r requirements.txt
+- RSVP submission validation
+- Duplicate email / Hofstra ID prevention
+- Event capacity and waitlist assignment
+- Admin PIN verification
+- Admin RSVP listing
+- RSVP approval and rejection
+- Email ticket sending after approval
+- Ticket validation
+- PDF ticket generation
+- Attendance fields for check-in tracking
+- CSV export
 
-# 4. Configure environment
-cp .env.example .env
-# Edit .env with your MongoDB URI and PIN
+---
 
-# 5. Run the server
-uvicorn main:app --reload
+## 🛠️ Tech Stack
+
+- **FastAPI** — API framework
+- **Motor** — async MongoDB driver
+- **MongoDB Atlas** — cloud database
+- **Pydantic** — request validation
+- **ReportLab** — PDF ticket generation
+- **EmailJS API** — confirmation email delivery
+- **httpx** — async HTTP requests
+- **Render** — backend deployment
+
+---
+
+## 📁 Backend Structure
+
+```text
+backend/
+├── main.py             # Main FastAPI application
+├── requirements.txt    # Python dependencies
+└── README.md           # Backend documentation
 ```
 
-The API will be live at http://localhost:8000.
-Interactive docs: http://localhost:8000/docs
+---
 
-## Deploy to Render
+### Approval statuses
 
-1. Push this folder to a GitHub repo (can be the same RSVP_Platform repo in a `/backend` subfolder).
-2. On [render.com](https://render.com), create a new **Web Service**.
-3. Set **Build Command**: `pip install -r requirements.txt`
-4. Set **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Add environment variables:
-   - `MONGO_URI` — your MongoDB Atlas connection string
-   - `ADMIN_PIN` — your 6-digit PIN
+```text
+pending     → submitted and waiting for admin approval
+approved    → admin approved and ticket email sent
+rejected    → admin rejected RSVP
+waitlisted  → event capacity was already reached
+```
 
-## Environment Variables
+---
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017` |
-| `ADMIN_PIN` | 6-digit PIN for ticket & admin access | `123456` |
+## 👥 Capacity Logic
 
-## Notes
+Capacity is based on **total attendees**, not just RSVP form count.
 
-- Duplicate submissions are blocked by email address.
-- QR codes expire on the date stored in `qrExpire`.
-- The PIN is shared across all tickets (same as the original design).
-- All timestamps are stored in EST.
+```text
+Main RSVP person = 1 attendee
+Guest 1 = +1 attendee
+Guest 2 = +1 attendee
+```
+
+Example:
+
+```text
+Event capacity: 200
+Current active attendees: 199
+New RSVP with 0 guests → pending
+New RSVP with 1 guest → waitlisted
+New RSVP with 2 guests → waitlisted
+```
+
+Only these statuses count toward capacity:
+
+```text
+pending
+approved
+```
+
+These do not count toward capacity:
+
+```text
+waitlisted
+rejected
+```
+
+---
+
+## 📬 Email Ticket Flow
+
+Tickets are sent only after admin approval.
+
+```text
+POST /submit
+    ↓
+Store RSVP as pending or waitlisted
+    ↓
+Admin clicks Approve
+    ↓
+PATCH /rsvps/{ticket_id}/approve
+    ↓
+Backend sends EmailJS confirmation email
+    ↓
+User receives ticket link
+```
+
+Ticket link format:
+
+```text
+https://psa-rsvp.vercel.app/ticket.html?id=<ticket_id>
+```
+
+---
+
+## 🔐 Admin Security
+
+Admin-only routes require this request header:
+
+```http
+x-admin-pin: your_admin_pin
+```
+
+The PIN is stored as an environment variable:
+
+```env
+ADMIN_PIN=your_admin_pin
+```
+
+---
+
+## 📡 API Endpoints
+
+### Health Check
+
+```http
+GET /
+```
+
+Returns backend status.
+
+---
+
+### Submit RSVP
+
+```http
+POST /submit
+```
+
+Creates a new RSVP and assigns either:
+
+```text
+pending
+waitlisted
+```
+
+depending on event capacity.
+
+---
+
+### Verify Admin PIN
+
+```http
+POST /verify-pin
+```
+
+Body:
+
+```json
+{
+  "pin": "your-pin"
+}
+```
+
+---
+
+### List RSVPs
+
+```http
+GET /rsvps
+```
+
+Requires:
+
+```http
+x-admin-pin: your_admin_pin
+```
+
+Used by:
+
+- `admin.html`
+- `analytics.html`
+
+---
+
+### Clear RSVPs
+
+```http
+DELETE /rsvps
+```
+
+Requires admin PIN.
+
+---
+
+### Export CSV
+
+```http
+GET /export.csv
+```
+
+Requires admin PIN.
+
+Exports RSVP data for spreadsheets and event records.
+
+---
+
+### Get Ticket
+
+```http
+GET /ticket/{ticket_id}
+```
+
+Returns ticket details only if the RSVP is approved.
+
+If the RSVP is pending, rejected, or waitlisted, the ticket is blocked.
+
+---
+
+### Generate PDF Ticket
+
+```http
+GET /generate-pdf?id=<ticket_id>
+```
+
+Generates a PDF ticket using ReportLab.
+
+---
+
+### Approve RSVP
+
+```http
+PATCH /rsvps/{ticket_id}/approve
+```
+
+Requires admin PIN.
+
+Does three things:
+
+```text
+1. Sets approvalStatus = approved
+2. Saves approvedTime
+3. Sends confirmation email
+```
+
+---
+
+### Reject RSVP
+
+```http
+PATCH /rsvps/{ticket_id}/reject
+```
+
+Requires admin PIN.
+
+Sets:
+
+```text
+approvalStatus = rejected
+rejectedTime = current Eastern time
+```
+
+---
+
+### Scan Ticket
+
+```http
+POST /scan/{ticket_id}
+```
+
+Requires admin PIN.
+
+Marks an approved ticket as attended.
+
+Recommended scan fields:
+
+```json
+{
+  "attended": true,
+  "checkedInTime": "2026-08-14 08:45:00 PM EDT",
+  "scanCount": 1,
+  "scanHistory": [
+    {
+      "time": "2026-08-14 08:45:00 PM EDT",
+      "type": "first_scan"
+    }
+  ]
+}
+```
+
+If the same ticket is scanned again:
+
+```text
+scanCount increases
+scanHistory gets another timestamp
+scanner.html shows a warning
+```
+
+---
+
+## 🧪 Testing Checklist
+
+- [ ] Backend root route loads
+- [ ] MongoDB connects successfully
+- [ ] RSVP submission works
+- [ ] Duplicate email is blocked
+- [ ] Duplicate Hofstra ID is blocked
+- [ ] Capacity sends overflow users to waitlist
+- [ ] Admin PIN works
+- [ ] Admin dashboard loads RSVPs
+- [ ] Approve sends EmailJS email
+- [ ] Rejected ticket cannot be opened
+- [ ] Waitlisted ticket cannot be opened
+- [ ] Approved ticket page loads QR code
+- [ ] PDF ticket downloads
+- [ ] Scanner marks ticket as attended
+- [ ] Duplicate scan shows warning
+- [ ] Analytics page updates attendance totals
+
+---
+
+## 🏁 Backend Goal
+
+The backend makes sure every event action is trusted, recorded, and traceable:
+
+```text
+RSVP submitted → capacity checked → admin reviewed → ticket sent → QR scanned → attendance tracked
+```
+
+It is the control center for the PSA RSVP Platform.

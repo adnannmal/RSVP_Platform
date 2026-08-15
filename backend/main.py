@@ -653,7 +653,7 @@ async def approve_rsvp(ticket_id: str, request: Request):
         "message": "RSVP approved and confirmation email sent."
     }
 
-    # ── Scan Ticket / Mark Attendance ──────────────────────────────────────────────
+# ── Scan Ticket / Mark Attendance ──────────────────────────────────────────────
 @app.post("/scan/{ticket_id}")
 async def scan_ticket(ticket_id: str, request: Request):
     require_admin(request)

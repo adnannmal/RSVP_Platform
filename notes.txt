@@ -1,6 +1,2 @@
-To do:
-- fix ticket.html
-- make sure you can see what is in barcode
-
 BACKEND To do:
 - Send calender invites (.ics files) with confirmation email (need emailjs subscirption)

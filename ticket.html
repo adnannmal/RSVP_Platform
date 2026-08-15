@@ -10,8 +10,8 @@
   <title>Ticket</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!--Barcode generator-->
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <!--QR Code generator-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     @keyframes fadeIn {
@@ -45,18 +45,16 @@
             </p>
 
             <div id="guestSection" class="hidden mt-3">
-
-            <div id="guestSection" class="hidden mt-3">
                 <p class="font-semibold text-gray-800">Guests:</p>
                 <ul id="guestList" class="list-disc list-inside text-gray-700"></ul>
             </div>
         </div>
 
-        <p class="mb-2 text-gray-800 font-semibold">Check-In Barcode</p>
+        <p class="mb-2 text-gray-800 font-semibold">Check-In QR Code</p>
 
-        <!--Barcode appears here-->
-        <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl">
-            <svg id="barcode" class="mx-auto w-full"></svg>
+        <!--QR Code appears here-->
+        <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl flex justify-center">
+            <div id="qrcode"></div>
         </div>
 
         <p id="ticketCodeText" class="text-xs text-gray-500 mt-2 break-all"></p>
@@ -96,7 +94,7 @@
                 ticketData = result.ticket;
 
                 displayTicket();
-                generateBarcode();
+                generateQRCode();
             }
             catch (err) {
                 console.error(err);
@@ -153,22 +151,24 @@
             }
         }
 
-        function generateBarcode() {
-            if (!window.JsBarcode) {
-                console.error("JsBarcode failed to load.");
+        function generateQRCode() {
+            if (!window.QRCode) {
+                console.error("QRCode library failed to load.");
                 return;
             }
 
-            const barcodeValue = ticketData.id || ticketId;
+            const qrValue = ticketData.id || ticketId;
+            const qrBox = document.getElementById("qrcode");
 
-            JsBarcode("#barcode", barcodeValue, {
-                format: "CODE128",
-                width: 2.4,
-                height: 90,
-                displayValue: false,
-                lineColor: "#022c22",
-                background: "transparent",
-                margin: 8
+            qrBox.innerHTML = "";
+
+            new QRCode(qrBox, {
+                text: qrValue,
+                width: 220,
+                height: 220,
+                colorDark: "#022c22",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
         }
 

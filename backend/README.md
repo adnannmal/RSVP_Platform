@@ -1,14 +1,8 @@
 # ⚡ PSA RSVP Backend
 
-> FastAPI backend for the Hofstra PSA RSVP Platform.
+FastAPI backend for the RSVP Platform.
 
-> Handles RSVP submissions, approval status, waitlist capacity, EmailJS ticket delivery, PDF tickets, admin data access, and attendance tracking.
-
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab?style=for-the-badge)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-22c55e?style=for-the-badge)
-![Render](https://img.shields.io/badge/Hosted%20On-Render-7c3aed?style=for-the-badge)
-![EmailJS](https://img.shields.io/badge/Email-EmailJS-f97316?style=for-the-badge)
+Handles RSVP submissions, approval status, waitlist capacity, EmailJS ticket delivery, PDF tickets, admin data access, and attendance tracking.
 
 ---
 

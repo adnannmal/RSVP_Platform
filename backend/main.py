@@ -252,6 +252,7 @@ async def submit_rsvp(data: RSVPSubmit):
     doc["attended"] = False
     doc["scanCount"] = 0
     doc["checkedInTime"] = ""
+    doc["scanHistory"] = []
 
     result = await col.insert_one(doc)
     ticket_id = str(result.inserted_id)
@@ -674,13 +675,36 @@ async def scan_ticket(ticket_id: str, request: Request):
             detail="This RSVP has not been approved yet."
         )
 
+    scan_time = est_now()
+
+    scan_record = {
+        "time": scan_time,
+        "type": "duplicate" if doc.get("attended") is True else "first_scan"
+    }
+
     if doc.get("attended") is True:
+        await col.update_one(
+            {"_id": oid},
+            {
+                "$inc": {
+                    "scanCount": 1
+                },
+                "$push": {
+                    "scanHistory": scan_record
+                }
+            }
+        )
+
+        updated_doc = await col.find_one({"_id": oid})
+
         return {
             "success": False,
             "alreadyScanned": True,
             "message": "This ticket has already been scanned.",
-            "checkedInTime": doc.get("checkedInTime", ""),
-            "ticket": doc_to_dict(doc)
+            "checkedInTime": updated_doc.get("checkedInTime", ""),
+            "scanCount": updated_doc.get("scanCount", 0),
+            "scanHistory": updated_doc.get("scanHistory", []),
+            "ticket": doc_to_dict(updated_doc)
         }
 
     await col.update_one(
@@ -688,10 +712,13 @@ async def scan_ticket(ticket_id: str, request: Request):
         {
             "$set": {
                 "attended": True,
-                "checkedInTime": est_now()
+                "checkedInTime": scan_time
             },
             "$inc": {
                 "scanCount": 1
+            },
+            "$push": {
+                "scanHistory": scan_record
             }
         }
     )
@@ -702,6 +729,9 @@ async def scan_ticket(ticket_id: str, request: Request):
         "success": True,
         "alreadyScanned": False,
         "message": "Ticket scanned successfully. Attendance marked.",
+        "checkedInTime": updated_doc.get("checkedInTime", ""),
+        "scanCount": updated_doc.get("scanCount", 0),
+        "scanHistory": updated_doc.get("scanHistory", []),
         "ticket": doc_to_dict(updated_doc)
     }
 

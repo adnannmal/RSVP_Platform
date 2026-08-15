@@ -132,6 +132,11 @@
                             <span id="resultScanCount">0</span>
                         </p>
 
+                        <div>
+                            <strong>Scan Times:</strong>
+                            <ul id="resultScanHistory" class="list-disc list-inside mt-1 text-sm text-gray-600"></ul>
+                        </div>
+
                         <p class="break-all">
                             <strong>Ticket ID:</strong>
                             <span id="resultTicketId">N/A</span>
@@ -170,6 +175,7 @@
     const resultStatus = document.getElementById("resultStatus");
     const resultCheckedInTime = document.getElementById("resultCheckedInTime");
     const resultScanCount = document.getElementById("resultScanCount");
+    const resultScanHistory = document.getElementById("resultScanHistory");
     const resultTicketId = document.getElementById("resultTicketId");
     const recentScans = document.getElementById("recentScans");
 
@@ -380,6 +386,7 @@
         resultStatus.textContent = "Invalid / Not Approved";
         resultCheckedInTime.textContent = "N/A";
         resultScanCount.textContent = "0";
+        resultScanHistory.innerHTML = `<li>N/A</li>`;
         resultTicketId.textContent = ticketId || "N/A";
     }
 
@@ -394,6 +401,24 @@
         resultStatus.textContent = ticket.approvalStatus || "N/A";
         resultCheckedInTime.textContent = ticket.checkedInTime || "N/A";
         resultScanCount.textContent = ticket.scanCount || 0;
+
+        const scanHistory = Array.isArray(ticket.scanHistory) ? ticket.scanHistory : [];
+
+        if (scanHistory.length > 0) {
+            resultScanHistory.innerHTML = scanHistory.map((scan, index) => {
+                const label = scan.type === "duplicate" ? "Duplicate scan" : "First scan";
+
+                return `
+                    <li>
+                        <span class="font-bold">${index + 1}.</span>
+                        ${label} — ${scan.time || "Unknown time"}
+                    </li>
+                `;
+            }).join("");
+        }
+        else {
+            resultScanHistory.innerHTML = `<li>No scan history yet.</li>`;
+        }
         resultTicketId.textContent = ticket.id || "N/A";
     }
 

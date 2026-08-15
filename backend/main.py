@@ -97,7 +97,6 @@ class RSVPSubmit(BaseModel):
     guest1lname: str = ""
     guest2fname: str = ""
     guest2lname: str = ""
-    ticketExpire:    str = ""
 
     @field_validator("email")
     @classmethod
@@ -284,17 +283,7 @@ async def get_ticket(ticket_id: str):
             "ok": False,
             "error": "This RSVP has not been approved yet."
         }
-
-    # Check ticket expiry
-    ticket_expire = doc.get("ticketExpire", "")
-    if ticket_expire:
-        try:
-            expire_dt = datetime.fromisoformat(ticket_expire.replace("Z", "+00:00"))
-            if datetime.now(timezone.utc) > expire_dt:
-                return {"ok": False, "error": "This ticket has expired."}
-        except ValueError:
-            pass
-
+    
     return {"ok": True, "ticket": doc_to_dict(doc)}
 
 

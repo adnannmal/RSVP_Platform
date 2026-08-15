@@ -1,4 +1,4 @@
-# 🇵🇰 Hofstra PSA RSVP Platform
+# RSVP Platform
 
 A polished, event-ready RSVP and check-in system built for the **Hofstra Pakistani Student Association (PSA)**.
 

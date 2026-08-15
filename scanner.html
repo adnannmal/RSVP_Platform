@@ -9,6 +9,7 @@
     <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
     <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 
     <!-- Barcode / QR camera scanner -->
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -223,62 +224,69 @@
 
     let html5QrCode = null;
     let isScanning = false;
-    let scanLocked = false;
-    let lastScannedValue = "";
-    let lastScannedAt = 0;
+    let lastScannedCode = "";
+    let lastScanTime = 0;
 
-    let sessionSuccessCount = 0;
-    let sessionDuplicateCount = 0;
-    let sessionErrorCount = 0;
-
-    window.addEventListener("DOMContentLoaded", function () {
-        if (!adminPin) {
-            loginRequired.classList.remove("hidden");
-            scannerContent.classList.add("hidden");
-            startScannerBtn.classList.add("hidden");
-            stopScannerBtn.classList.add("hidden");
+    async function startScanner() {
+        if (isScanning) {
             return;
         }
 
-        loginRequired.classList.add("hidden");
-        scannerContent.classList.remove("hidden");
-    });
+        const reader = document.getElementById("reader");
 
-    async function startScanner() {
-        if (isScanning || !adminPin) {
+        if (!reader) {
+            alert("Scanner box not found.");
             return;
         }
 
         try {
             html5QrCode = new Html5Qrcode("reader");
 
+            const cameras = await Html5Qrcode.getCameras();
+
+            if (!cameras || cameras.length === 0) {
+                alert("No camera found. Please allow camera access.");
+                return;
+            }
+
+            const backCamera = cameras.find(camera =>
+                camera.label.toLowerCase().includes("back") ||
+                camera.label.toLowerCase().includes("rear") ||
+                camera.label.toLowerCase().includes("environment")
+            );
+
+            const cameraId = backCamera ? backCamera.id : cameras[cameras.length - 1].id;
+
             await html5QrCode.start(
-                { facingMode: "environment" },
+                cameraId,
                 {
                     fps: 10,
                     qrbox: {
-                        width: 300,
-                        height: 160
+                        width: 260,
+                        height: 120
                     },
-                    formatsToSupport: [
-                        Html5QrcodeSupportedFormats.CODE_128,
-                        Html5QrcodeSupportedFormats.QR_CODE
-                    ]
+                    aspectRatio: 1.777
                 },
                 async (decodedText) => {
-                    await handleScannedValue(decodedText);
+                    const now = Date.now();
+
+                    if (decodedText === lastScannedCode && now - lastScanTime < 3000) {
+                        return;
+                    }
+
+                    lastScannedCode = decodedText;
+                    lastScanTime = now;
+
+                    await scanTicket(decodedText.trim());
                 },
                 () => {}
             );
 
             isScanning = true;
-            startScannerBtn.classList.add("hidden");
-            stopScannerBtn.classList.remove("hidden");
-            setWaitingState("Scanner running", "Scan a ticket barcode to check in an attendee.");
         }
         catch (err) {
             console.error(err);
-            setErrorState("Camera Error", "Could not start scanner. Check camera permissions or use manual ticket ID entry.");
+            alert("Camera scanner could not start. Check camera permissions and make sure you are using HTTPS.");
         }
     }
 

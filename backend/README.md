@@ -1,4 +1,4 @@
-# ⚡ PSA RSVP Backend
+# ⚡ RSVP Backend
 
 FastAPI backend for the RSVP Platform.
 

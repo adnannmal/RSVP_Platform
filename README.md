@@ -8,7 +8,7 @@ Collect RSVPs, manage approvals, control capacity, issue QR tickets, scan attend
 
 ## ✨ What This Project Does
 
-The PSA RSVP Platform is a full event management system for student organization events. It replaces manual sign-up forms with a clean web experience that supports:
+The RSVP Platform is a full event management system for student organization events. It replaces manual sign-up forms with a clean web experience that supports:
 
 - RSVP form submission
 - Hofstra email validation
@@ -194,7 +194,7 @@ It tracks:
 ## 📁 Project Structure
 
 ```text
-psa-rsvp/
+rsvo-platform/
 ├── Images/
 │   ├── logo.png
 │   ├── pakistan_flag.png

@@ -34,7 +34,7 @@ app.add_middleware(
 )
 
 # ── MongoDB ────────────────────────────────────────────────────────────────────
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localrhost:27017")
 ADMIN_PIN  = os.getenv("ADMIN_PIN", "123456")   # Change via env var
 
 client = AsyncIOMotorClient(MONGO_URI, tls=True, tlsAllowInvalidCertificates=True)
@@ -744,4 +744,56 @@ async def reject_rsvp(ticket_id: str, request: Request):
     return {
         "success": True,
         "message": "RSVP rejected."
+    }
+
+# ── Scan Ticket / Mark Attendance ──────────────────────────────────────────────
+@app.post("/scan/{ticket_id}")
+async def scan_ticket(ticket_id: str, request: Request):
+    require_admin(request)
+
+    try:
+        oid = ObjectId(ticket_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ticket ID format.")
+
+    doc = await col.find_one({"_id": oid})
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Ticket not found.")
+
+    if doc.get("approvalStatus") != "approved":
+        raise HTTPException(
+            status_code=403,
+            detail="This RSVP has not been approved yet."
+        )
+
+    if doc.get("attended") is True:
+        return {
+            "success": False,
+            "alreadyScanned": True,
+            "message": "This ticket has already been scanned.",
+            "checkedInTime": doc.get("checkedInTime", ""),
+            "ticket": doc_to_dict(doc)
+        }
+
+    await col.update_one(
+        {"_id": oid},
+        {
+            "$set": {
+                "attended": True,
+                "checkedInTime": est_now()
+            },
+            "$inc": {
+                "scanCount": 1
+            }
+        }
+    )
+
+    updated_doc = await col.find_one({"_id": oid})
+
+    return {
+        "success": True,
+        "alreadyScanned": False,
+        "message": "Ticket scanned successfully. Attendance marked.",
+        "ticket": doc_to_dict(updated_doc)
     }

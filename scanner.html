@@ -1,0 +1,530 @@
+<!DOCTYPE html> <!--recognizes file type as HTML-->
+
+<html lang="en"> <!--sets language to english-->
+
+<head>
+    <meta charset="UTF-8" /> <!--tells web browser to interpret doc using UTF-8 encoding-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!--allows for mobile compatibility-->
+    <title>PSA Ticket Scanner</title> <!--Title shown in browser tab-->
+    <link rel="icon" type="image/png" href="Images/logo.png" /> <!-- Tab icon -->
+    <link rel="stylesheet" href="style.css" /> <!-- Custom CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Barcode / QR camera scanner -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            800: '#064e3b',
+                            900: '#022c22',
+                        },
+                        pakistan: {
+                            dark: '#004b23',
+                            light: '#007200',
+                            gold: '#d4af37'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-emerald-800 min-h-screen p-4 md:p-10 font-sans text-slate-100 relative overflow-x-hidden select-none">
+
+    <!-- Scanner Dashboard -->
+
+    <div class="max-w-7xl mx-auto relative z-10 animate-fade-in">
+
+        <!-- Header -->
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-white/10 pb-6">
+            <div>
+                <h1 class="text-4xl font-black text-white tracking-tight">Ticket Scanner</h1>
+                <p class="text-pakistan-gold font-bold tracking-widest uppercase text-sm mt-1">Scan barcodes and mark attendance</p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <a href="admin.html" class="bg-white text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md hover:bg-emerald-50 transition-all duration-300 active:scale-95">
+                    Back to Admin
+                </a>
+
+                <a href="analytics.html" class="bg-purple-600 hover:bg-purple-700 text-white font-black px-6 py-2.5 rounded-xl shadow-md transition-all duration-300 active:scale-95">
+                    Analytics
+                </a>
+
+                <button id="startScanner" class="bg-pakistan-gold text-emerald-900 font-black px-6 py-2.5 rounded-xl shadow-md hover:opacity-90 transition-all duration-300 active:scale-95">
+                    Start Scanner
+                </button>
+
+                <button id="stopScanner" class="hidden bg-red-600 hover:bg-red-700 text-white font-black px-6 py-2.5 rounded-xl shadow-md transition-all duration-300 active:scale-95">
+                    Stop Scanner
+                </button>
+            </div>
+        </div>
+
+        <!-- Login Required Message -->
+
+        <div id="loginRequired" class="hidden bg-white/95 text-center p-8 rounded-2xl shadow-2xl border-t-4 border-pakistan-gold max-w-md mx-auto">
+            <h2 class="text-3xl font-black text-emerald-900 mb-3">Admin Login Required</h2>
+            <p class="text-gray-600 font-bold mb-6">Please log in through the admin dashboard before scanning tickets.</p>
+            <a href="admin.html" class="inline-block bg-emerald-900 text-white font-black px-6 py-3 rounded-xl hover:bg-emerald-800 transition-all">
+                Go to Admin Login
+            </a>
+        </div>
+
+        <!-- Scanner Content -->
+
+        <div id="scannerContent" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- Scanner Box -->
+
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-pakistan-gold p-6">
+                <div class="mb-5">
+                    <h2 class="text-2xl font-black text-emerald-900">Camera Scanner</h2>
+                    <p class="text-gray-500 font-bold text-sm mt-1">Scan the barcode on the ticket. The scanner stays open for multiple check-ins.</p>
+                </div>
+
+                <div id="reader" class="rounded-xl overflow-hidden border-2 border-emerald-100 bg-gray-50"></div>
+
+                <div class="mt-5 border-t border-gray-200 pt-5">
+                    <label class="block text-emerald-900 font-black text-sm uppercase tracking-widest mb-2">
+                        Manual Ticket ID Entry
+                    </label>
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input id="manualTicketId" type="text" placeholder="Paste ticket ID here" class="w-full px-4 py-3 rounded-xl border-2 border-emerald-100 text-emerald-900 font-bold outline-none focus:border-pakistan-gold transition-all duration-300" />
+
+                        <button id="manualScanBtn" class="bg-emerald-900 hover:bg-emerald-800 text-white font-black px-6 py-3 rounded-xl shadow-md transition-all duration-300 active:scale-95 whitespace-nowrap">
+                            Check In
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scan Result -->
+
+            <div class="space-y-6">
+
+                <div id="resultCard" class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-gray-300 p-6">
+                    <p id="resultStatus" class="text-gray-500 text-xs font-black uppercase tracking-widest">Waiting for scan</p>
+                    <h2 id="resultTitle" class="text-3xl font-black text-emerald-900 mt-2">Ready</h2>
+                    <p id="resultMessage" class="text-gray-600 font-bold mt-2">Start the scanner or enter a ticket ID manually.</p>
+
+                    <div id="ticketInfo" class="hidden mt-6 bg-emerald-50 border border-emerald-100 rounded-xl p-5 text-emerald-900">
+                        <div class="space-y-3">
+                            <p>
+                                <strong>Name:</strong>
+                                <span id="infoName"></span>
+                            </p>
+
+                            <p>
+                                <strong>Email:</strong>
+                                <span id="infoEmail"></span>
+                            </p>
+
+                            <p>
+                                <strong>Guests:</strong>
+                                <span id="infoGuests"></span>
+                            </p>
+
+                            <p>
+                                <strong>Ticket ID:</strong>
+                                <span id="infoTicketId" class="font-mono break-all"></span>
+                            </p>
+
+                            <p>
+                                <strong>Checked-In Time:</strong>
+                                <span id="infoCheckedInTime"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Stats -->
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-green-400 p-5">
+                        <p class="text-gray-500 text-xs font-black uppercase tracking-widest">New Check-Ins</p>
+                        <p id="sessionSuccessCount" class="text-3xl font-black text-green-800 mt-1">0</p>
+                    </div>
+
+                    <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-yellow-400 p-5">
+                        <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Duplicates</p>
+                        <p id="sessionDuplicateCount" class="text-3xl font-black text-yellow-700 mt-1">0</p>
+                    </div>
+
+                    <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-red-400 p-5">
+                        <p class="text-gray-500 text-xs font-black uppercase tracking-widest">Errors</p>
+                        <p id="sessionErrorCount" class="text-3xl font-black text-red-800 mt-1">0</p>
+                    </div>
+                </div>
+
+                <!-- Scan History -->
+
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border-t-4 border-pakistan-gold">
+                    <div class="p-5 border-b border-gray-100">
+                        <h2 class="text-2xl font-black text-emerald-900">Recent Scans</h2>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-emerald-50/70 border-b border-emerald-100">
+                                <tr>
+                                    <th class="px-5 py-3 text-xs font-black text-emerald-900 uppercase tracking-widest">Status</th>
+                                    <th class="px-5 py-3 text-xs font-black text-emerald-900 uppercase tracking-widest">Name</th>
+                                    <th class="px-5 py-3 text-xs font-black text-emerald-900 uppercase tracking-widest">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scanHistoryBody" class="divide-y divide-gray-100 text-gray-700">
+                                <tr>
+                                    <td colspan="3" class="px-5 py-8 text-center italic text-gray-400">No scans yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const API_BASE = "https://rsvp-backend-5b7q.onrender.com";
+
+    const adminPin = sessionStorage.getItem("adminPin") || "";
+
+    const loginRequired = document.getElementById("loginRequired");
+    const scannerContent = document.getElementById("scannerContent");
+
+    const startScannerBtn = document.getElementById("startScanner");
+    const stopScannerBtn = document.getElementById("stopScanner");
+    const manualTicketIdInput = document.getElementById("manualTicketId");
+    const manualScanBtn = document.getElementById("manualScanBtn");
+
+    const resultCard = document.getElementById("resultCard");
+    const resultStatus = document.getElementById("resultStatus");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultMessage = document.getElementById("resultMessage");
+    const ticketInfo = document.getElementById("ticketInfo");
+    const infoName = document.getElementById("infoName");
+    const infoEmail = document.getElementById("infoEmail");
+    const infoGuests = document.getElementById("infoGuests");
+    const infoTicketId = document.getElementById("infoTicketId");
+    const infoCheckedInTime = document.getElementById("infoCheckedInTime");
+
+    const sessionSuccessCountEl = document.getElementById("sessionSuccessCount");
+    const sessionDuplicateCountEl = document.getElementById("sessionDuplicateCount");
+    const sessionErrorCountEl = document.getElementById("sessionErrorCount");
+    const scanHistoryBody = document.getElementById("scanHistoryBody");
+
+    let html5QrCode = null;
+    let isScanning = false;
+    let scanLocked = false;
+    let lastScannedValue = "";
+    let lastScannedAt = 0;
+
+    let sessionSuccessCount = 0;
+    let sessionDuplicateCount = 0;
+    let sessionErrorCount = 0;
+
+    window.addEventListener("DOMContentLoaded", function () {
+        if (!adminPin) {
+            loginRequired.classList.remove("hidden");
+            scannerContent.classList.add("hidden");
+            startScannerBtn.classList.add("hidden");
+            stopScannerBtn.classList.add("hidden");
+            return;
+        }
+
+        loginRequired.classList.add("hidden");
+        scannerContent.classList.remove("hidden");
+    });
+
+    async function startScanner() {
+        if (isScanning || !adminPin) {
+            return;
+        }
+
+        try {
+            html5QrCode = new Html5Qrcode("reader");
+
+            await html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: {
+                        width: 300,
+                        height: 160
+                    },
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.QR_CODE
+                    ]
+                },
+                async (decodedText) => {
+                    await handleScannedValue(decodedText);
+                },
+                () => {}
+            );
+
+            isScanning = true;
+            startScannerBtn.classList.add("hidden");
+            stopScannerBtn.classList.remove("hidden");
+            setWaitingState("Scanner running", "Scan a ticket barcode to check in an attendee.");
+        }
+        catch (err) {
+            console.error(err);
+            setErrorState("Camera Error", "Could not start scanner. Check camera permissions or use manual ticket ID entry.");
+        }
+    }
+
+    async function stopScanner() {
+        if (!html5QrCode || !isScanning) {
+            return;
+        }
+
+        try {
+            await html5QrCode.stop();
+            await html5QrCode.clear();
+        }
+        catch (err) {
+            console.error(err);
+        }
+
+        isScanning = false;
+        html5QrCode = null;
+        startScannerBtn.classList.remove("hidden");
+        stopScannerBtn.classList.add("hidden");
+        setWaitingState("Scanner stopped", "Start the scanner again when you are ready.");
+    }
+
+    async function handleManualScan() {
+        const value = manualTicketIdInput.value.trim();
+
+        if (!value) {
+            setErrorState("Missing Ticket ID", "Enter or paste a ticket ID first.");
+            return;
+        }
+
+        await handleScannedValue(value, true);
+        manualTicketIdInput.value = "";
+    }
+
+    async function handleScannedValue(value, manual = false) {
+        const ticketId = cleanTicketId(value);
+        const now = Date.now();
+
+        if (!ticketId) {
+            setErrorState("Invalid Scan", "The barcode did not contain a valid ticket ID.");
+            incrementErrorCount();
+            return;
+        }
+
+        if (!manual && scanLocked) {
+            return;
+        }
+
+        if (!manual && ticketId === lastScannedValue && now - lastScannedAt < 3500) {
+            return;
+        }
+
+        scanLocked = true;
+        lastScannedValue = ticketId;
+        lastScannedAt = now;
+
+        await checkInTicket(ticketId);
+
+        setTimeout(() => {
+            scanLocked = false;
+        }, 1600);
+    }
+
+    function cleanTicketId(value) {
+        let cleaned = String(value || "").trim();
+
+        if (cleaned.includes("ticket.html?id=")) {
+            try {
+                const url = new URL(cleaned);
+                cleaned = url.searchParams.get("id") || cleaned;
+            }
+            catch (err) {
+                const parts = cleaned.split("id=");
+                cleaned = parts[1] || cleaned;
+            }
+        }
+
+        cleaned = cleaned.replace(/[^a-fA-F0-9]/g, "");
+
+        if (cleaned.length !== 24) {
+            return "";
+        }
+
+        return cleaned;
+    }
+
+    async function checkInTicket(ticketId) {
+        setWaitingState("Checking ticket", "Please wait while the ticket is verified.");
+
+        try {
+            const response = await fetch(`${API_BASE}/scan/${encodeURIComponent(ticketId)}`, {
+                method: "POST",
+                headers: {
+                    "x-admin-pin": adminPin
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.status === 401) {
+                sessionStorage.removeItem("adminPin");
+                throw new Error("Admin session expired. Please log in again through the admin dashboard.");
+            }
+
+            if (!response.ok) {
+                throw new Error(data.detail || data.message || "Ticket scan failed.");
+            }
+
+            if (data.alreadyScanned) {
+                sessionDuplicateCount++;
+                updateSessionCounts();
+                setWarningState(data.message || "This ticket has already been scanned.", data.ticket, data.checkedInTime);
+                addHistoryRow("Duplicate", data.ticket, "yellow");
+                return;
+            }
+
+            sessionSuccessCount++;
+            updateSessionCounts();
+            setSuccessState(data.message || "Ticket scanned successfully. Attendance marked.", data.ticket);
+            addHistoryRow("Checked In", data.ticket, "green");
+        }
+        catch (err) {
+            console.error(err);
+            incrementErrorCount();
+            setErrorState("Scan Failed", err.message || "Could not scan ticket.");
+            addHistoryRow("Error", { fname: "", lname: "", checkedInTime: new Date().toLocaleTimeString() }, "red");
+        }
+    }
+
+    function setWaitingState(title, message) {
+        resultCard.className = "bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-gray-300 p-6";
+        resultStatus.textContent = "Waiting";
+        resultTitle.textContent = title;
+        resultTitle.className = "text-3xl font-black text-emerald-900 mt-2";
+        resultMessage.textContent = message;
+        resultMessage.className = "text-gray-600 font-bold mt-2";
+        ticketInfo.classList.add("hidden");
+    }
+
+    function setSuccessState(message, ticket) {
+        resultCard.className = "bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-green-400 p-6";
+        resultStatus.textContent = "Success";
+        resultTitle.textContent = "Checked In";
+        resultTitle.className = "text-3xl font-black text-green-800 mt-2";
+        resultMessage.textContent = message;
+        resultMessage.className = "text-green-700 font-bold mt-2";
+        showTicketInfo(ticket);
+    }
+
+    function setWarningState(message, ticket, checkedInTime) {
+        resultCard.className = "bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-yellow-400 p-6";
+        resultStatus.textContent = "Warning";
+        resultTitle.textContent = "Already Scanned";
+        resultTitle.className = "text-3xl font-black text-yellow-700 mt-2";
+        resultMessage.textContent = `${message}${checkedInTime ? ` Checked in at: ${checkedInTime}` : ""}`;
+        resultMessage.className = "text-yellow-700 font-bold mt-2";
+        showTicketInfo(ticket);
+    }
+
+    function setErrorState(title, message) {
+        resultCard.className = "bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-t-4 border-red-400 p-6";
+        resultStatus.textContent = "Error";
+        resultTitle.textContent = title;
+        resultTitle.className = "text-3xl font-black text-red-800 mt-2";
+        resultMessage.textContent = message;
+        resultMessage.className = "text-red-700 font-bold mt-2";
+        ticketInfo.classList.add("hidden");
+    }
+
+    function showTicketInfo(ticket) {
+        if (!ticket) {
+            ticketInfo.classList.add("hidden");
+            return;
+        }
+
+        const guests = [];
+
+        if (ticket.guest1fname || ticket.guest1lname) {
+            guests.push(`${ticket.guest1fname || ""} ${ticket.guest1lname || ""}`.trim());
+        }
+
+        if (ticket.guest2fname || ticket.guest2lname) {
+            guests.push(`${ticket.guest2fname || ""} ${ticket.guest2lname || ""}`.trim());
+        }
+
+        infoName.textContent = `${ticket.fname || ""} ${ticket.lname || ""}`.trim() || "N/A";
+        infoEmail.textContent = ticket.email || "N/A";
+        infoGuests.textContent = guests.length > 0 ? guests.join(", ") : "N/A";
+        infoTicketId.textContent = ticket.id || "N/A";
+        infoCheckedInTime.textContent = ticket.checkedInTime || "N/A";
+
+        ticketInfo.classList.remove("hidden");
+    }
+
+    function incrementErrorCount() {
+        sessionErrorCount++;
+        updateSessionCounts();
+    }
+
+    function updateSessionCounts() {
+        sessionSuccessCountEl.textContent = sessionSuccessCount;
+        sessionDuplicateCountEl.textContent = sessionDuplicateCount;
+        sessionErrorCountEl.textContent = sessionErrorCount;
+    }
+
+    function addHistoryRow(status, ticket, color) {
+        if (scanHistoryBody.querySelector("td[colspan='3']")) {
+            scanHistoryBody.innerHTML = "";
+        }
+
+        const name = ticket
+            ? `${ticket.fname || ""} ${ticket.lname || ""}`.trim() || "N/A"
+            : "N/A";
+
+        const time = ticket?.checkedInTime || new Date().toLocaleTimeString();
+
+        const colorClasses = {
+            green: "bg-green-100 text-green-800 border-green-200",
+            yellow: "bg-yellow-100 text-yellow-700 border-yellow-200",
+            red: "bg-red-100 text-red-800 border-red-200"
+        };
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-emerald-50/30 transition-colors duration-200";
+
+        tr.innerHTML = `
+            <td class="px-5 py-3">
+                <span class="${colorClasses[color]} border px-3 py-1 rounded-lg text-xs font-black uppercase">${status}</span>
+            </td>
+            <td class="px-5 py-3 font-black text-emerald-900">${name}</td>
+            <td class="px-5 py-3 text-sm font-bold text-gray-500">${time}</td>
+        `;
+
+        scanHistoryBody.prepend(tr);
+    }
+
+    startScannerBtn?.addEventListener("click", startScanner);
+    stopScannerBtn?.addEventListener("click", stopScanner);
+    manualScanBtn?.addEventListener("click", handleManualScan);
+
+    manualTicketIdInput?.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            handleManualScan();
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,2 +1,0 @@
-BACKEND To do:
-- Send calender invites (.ics files) with confirmation email (need emailjs subscirption)
